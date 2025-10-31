@@ -88,7 +88,6 @@ npm start
 👨‍🚀 **Autore:** LUC4N3X  <br>
 ⚙️ **Progetto:** StreamOrder  <br>
 💡 **Concept:** Cyberpunk Addon Console per Stremio  <br>
-🌍 **GitHub:** [github.com/LUC4N3X](https://github.com/LUC4N3X)
 </p>
 
 ---
