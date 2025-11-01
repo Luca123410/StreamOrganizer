@@ -24,21 +24,103 @@
     margin: 0;
     padding: 0;
 }
+
+/* Queste sono le tue regole di default (DARK MODE)
+*/
 html, body {
-    min-height: 100%;
+    min-height: 100vh;
     height: auto;
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    
+    /* Colori di base (Dark Mode) */
     background: #08020a;
-    color: #E6E6E6;
+    color: #E6E6E6; /* <-- Il grigio chiaro di default */
+
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
- 
-    /* Scroll verticale attivo */
     overflow-y: auto;
-    overflow-x: hidden; /* previene scroll orizzontale indesiderato */
+    overflow-x: hidden;
     scroll-behavior: smooth;
-    overscroll-behavior: auto; /* permette bounce su mobile se serve */
+    overscroll-behavior-y: contain;
     transition: background 0.5s ease, color 0.5s ease;
+    line-height: 1.5;
+
+    /* Scrollbar per Firefox (Dark Mode) */
+    scrollbar-width: thin;
+    scrollbar-color: #3a2a45 #08020a; 
+}
+
+/* Scrollbar per WebKit (Dark Mode) */
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: #08020a; 
+}
+::-webkit-scrollbar-thumb {
+    background-color: #3a2a45;
+    border-radius: 5px;
+    border: 2px solid #08020a;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #503a60;
+}
+
+
+/* ====== REGOLE PER LIGHT MODE ====== */
+body.light-mode {
+    background: #f4f4f4; /* Sfondo chiaro */
+    color: #222222;    /* Testo scuro */
+    
+    /* Scrollbar per Firefox (Light Mode) */
+    scrollbar-color: #aaaaaa #f4f4f4;
+}
+
+/* Scrollbar per WebKit (Light Mode) */
+body.light-mode::-webkit-scrollbar-track {
+    background: #f4f4f4;
+}
+body.light-mode::-webkit-scrollbar-thumb {
+    background-color: #aaaaaa;
+    border-color: #f4f4f4;
+}
+body.light-mode::-webkit-scrollbar-thumb:hover {
+    background-color: #888888;
+}
+
+
+/* ====== 💡 NUOVA CORREZIONE PER TESTO GRIGIO 💡 ====== */
+/* Questo blocco forza tutti gli elementi di testo comuni
+  all'interno del .light-mode a ereditare il colore
+  del body (che abbiamo impostato a #222222).
+  Questo vince contro le regole specifiche del dark mode.
+*/
+body.light-mode p,
+body.light-mode span,
+body.light-mode li,
+body.light-mode div,
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body.light-mode h6 {
+    color: inherit; /* 'inherit' significa "usa lo stesso colore del tuo genitore" */
+}
+
+
+/* ====== SOLUZIONE "Lingua" NERO (già presente) ====== */
+button,
+a,
+[role="button"] {
+    color: inherit; /* Eredita il colore (chiaro o scuro) */
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Stili per Intro.js (già presenti) */
+.introjs-button {
+    color: #333 !important; 
 }
 /* ====== BACKGROUND CANVAS + CYBERPUNK MAGIC ====== */
 #bgCanvas {
