@@ -12,7 +12,7 @@ RUN npm install --omit=dev
 COPY . .
 
 # Espone la porta standard di Hugging Face
-EXPOSE 7860 
+EXPOSE 8080 
 
 # Comando di avvio dell'applicazione
 CMD ["node", "index.js"]
