@@ -40,7 +40,7 @@ html, body {
     overscroll-behavior: auto; /* permette bounce su mobile se serve */
     transition: background 0.5s ease, color 0.5s ease;
 }
-/* ====== BACKGROUND CANVAS (FULL-SCREEN ) ====== */
+/* ====== BACKGROUND CANVAS + CYBERPUNK MAGIA ====== */
 #bgCanvas {
     position: fixed;
     inset: 0;
@@ -49,22 +49,53 @@ html, body {
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
-    /* AGGIORNATO: Sfondo base più scuro per maggiore contrasto neon */
-    background: radial-gradient(circle at 50% 50%, rgba(10, 5, 15, 0.9) 0%, rgba(0,0,0,1) 100%),
-                 radial-gradient(circle at 30% 70%, rgba(255,0,200,0.05) 0%, transparent 60%),
-                 radial-gradient(circle at 80% 20%, rgba(0,200,255,0.05) 0%, transparent 50%);
-    background-blend-mode: overlay, screen, screen;
-    will-change: opacity;
+
+    /* Palette cyberpunk bilanciata */
+    background: radial-gradient(circle at 50% 50%, rgba(50,10,60,0.85) 0%, rgba(10,5,20,1) 80%),
+                radial-gradient(circle at 25% 25%, rgba(255,0,200,0.07) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0,200,255,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(180,50,255,0.04) 0%, transparent 60%);
+    background-blend-mode: overlay, screen, screen, screen;
+    
+    will-change: opacity, transform;
     contain: strict;
-    box-shadow: inset 0 0 100px rgba(255,255,255,0.05);
+    box-shadow: inset 0 0 120px rgba(255,255,255,0.05);
     transform: translateZ(0);
-    animation: bgPulse 20s infinite alternate ease-in-out;
+
+    animation: bgPulse 18s infinite alternate ease-in-out,
+               bgShift 40s infinite linear;
 }
+
+/* Pulsazione lenta e delicata */
 @keyframes bgPulse {
-    0% { opacity: 0.95; }
+    0% { opacity: 0.94; }
     50% { opacity: 1; }
-    100% { opacity: 0.95; }
+    100% { opacity: 0.94; }
 }
+
+/* Movimento leggero dei gradienti per “vita” */
+@keyframes bgShift {
+    0% { background-position: 50% 50%, 25% 25%, 80% 20%, 70% 70%; }
+    50% { background-position: 52% 48%, 23% 27%, 78% 22%, 72% 68%; }
+    100% { background-position: 50% 50%, 25% 25%, 80% 20%, 70% 70%; }
+}
+
+/* Piccole particelle luminose */
+#bgCanvas::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 100%);
+    pointer-events: none;
+    animation: particlesDrift 60s infinite linear;
+}
+
+@keyframes particlesDrift {
+    0% { transform: translate(0,0) scale(1); opacity: 0.3; }
+    50% { transform: translate(50px, -30px) scale(1.1); opacity: 0.4; }
+    100% { transform: translate(0,0) scale(1); opacity: 0.3; }
+}
+
 
 /* ====== APP CONTAINER (Glass Card) ====== */
 #app {
@@ -1794,103 +1825,137 @@ body.light-mode .lang-select {
 
     </div> <!-- Fine #app -->
 <script>
-    // Background animation script (MODIFICATO per onde più complesse e volatili)
-    (function initBackground() {
-        const canvas = document.getElementById('bgCanvas'); 
-        const ctx = canvas.getContext('2d', { alpha: true }); 
-        let w = canvas.width = innerWidth; 
-        let h = canvas.height = innerHeight; 
-        let tStart = performance.now(); 
-        
-        // NUOVI LAYER con frequenze e ampiezze diverse per un effetto più caotico
-        const layers = [ 
-            // Electric Purple (High Freq, Low Amp)
-            { amplitude: 40, wavelength: 0.006, speed: 0.0012, hue: 270, alpha: 0.25, thickness: 1.0 },
-            // Chaos Blue (Medium Freq, Medium Amp)
-            { amplitude: 90, wavelength: 0.0072, speed: 0.0006, hue: 200, alpha: 0.15, thickness: 2.2 },
-            // Magenta Glitch (Medium Freq, Low Amp)
-            { amplitude: 30, wavelength: 0.011, speed: 0.0018, hue: 300, alpha: 0.2, thickness: 1.8 },
-            // Neon Green/Teal (Low Freq, High Amp)
-            { amplitude: 180, wavelength: 0.004, speed: 0.0003, hue: 160, alpha: 0.1, thickness: 3.0 }
-        ]; 
-        
-        function resize() { w = canvas.width = innerWidth; h = canvas.height = innerHeight; } 
-        addEventListener('resize', resize); 
-        
-        function draw(t) { 
-            const time = (t - tStart); 
-            ctx.clearRect(0, 0, w, h); 
+    // ⚡ CYBER NEXUS - CYBERPUNK EPIC FINAL
+(function initCyberFinal() {
+    const canvas = document.getElementById('bgCanvas');
+    if(!canvas) return console.error("#bgCanvas non trovato!");
+    const ctx = canvas.getContext('2d', {alpha:true});
 
-            // Deep Space Background Gradient 
-            const g = ctx.createLinearGradient(0, 0, w, h); 
-            g.addColorStop(0, 'rgba(6,2,12,1)'); 
-            g.addColorStop(0.3, 'rgba(12,6,20,1)'); 
-            g.addColorStop(1, 'rgba(3,2,8,1)'); 
-            ctx.fillStyle = g; 
-            ctx.fillRect(0, 0, w, h); 
-            
-            // Subtle Radial Glow (Blends better in dark mode)
-            const vg = ctx.createRadialGradient(w * 0.5, h * 0.5, Math.min(w,h)*0.1, w*0.5, h*0.5, Math.max(w,h)*0.8);
-            vg.addColorStop(0, 'rgba(187,134,252,0.01)');
-            vg.addColorStop(0.4, 'rgba(0,0,0,0.0)');
-            vg.addColorStop(1, 'rgba(0,0,0,0.7)');
-            ctx.fillStyle = vg;
+    let w = canvas.width = innerWidth;
+    let h = canvas.height = innerHeight;
+    let tStart = performance.now();
+    let mouse = {x:w/2, y:h/2};
+
+    const layers = [
+        {amp:50, wave:0.007, speed:0.0015, hue:270, alpha:0.28, thick:1.5}, // viola/fucsia
+        {amp:80, wave:0.005, speed:0.0008, hue:200, alpha:0.25, thick:2},   // ciano
+        {amp:30, wave:0.01, speed:0.0018, hue:320, alpha:0.2, thick:1.6},   // fucsia
+        {amp:160, wave:0.004, speed:0.0003, hue:180, alpha:0.15, thick:2.5} // turchese
+    ];
+
+    const gridLines = Array.from({length: 35}, () => ({
+        x: Math.random()*w, y: Math.random()*h,
+        len: 100+Math.random()*200,
+        speed: 0.4 + Math.random()*0.6,
+        alpha: 0.05+Math.random()*0.1
+    }));
+
+    const particles = Array.from({length:150},() => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        r: Math.random()*1.2+0.2,
+        speed: 0.1 + Math.random()*0.3,
+        alpha: 0.1 + Math.random()*0.25
+    }));
+
+    function resize(){ w=canvas.width=innerWidth; h=canvas.height=innerHeight; }
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', e => { mouse.x=e.clientX; mouse.y=e.clientY; });
+
+    window.addEventListener('click', ()=>{
+        const pulse={r:0,max:Math.min(w,h)*0.8,alpha:0.4};
+        const anim=()=>{
+            pulse.r+=30;
+            pulse.alpha*=0.88;
+            ctx.beginPath();
+            ctx.arc(mouse.x, mouse.y, pulse.r,0,Math.PI*2);
+            ctx.strokeStyle=`rgba(255,255,255,${pulse.alpha})`;
+            ctx.lineWidth=3;
+            ctx.stroke();
+            if(pulse.alpha>0.01) requestAnimationFrame(anim);
+        };
+        anim();
+    });
+
+    function draw(t){
+        const time=t-tStart;
+
+        // Sfondo canvas coordinato
+        ctx.clearRect(0,0,w,h);
+
+        // Onde neon con glitch
+        ctx.globalCompositeOperation='lighter';
+        layers.forEach((L,idx)=>{
+            ctx.beginPath();
+            const grad=ctx.createLinearGradient(0,0,w,0);
+            grad.addColorStop(0,`hsla(${L.hue},100%,60%,${L.alpha})`);
+            grad.addColorStop(1,`hsla(${(L.hue+20)%360},80%,55%,${L.alpha})`);
+            ctx.strokeStyle=grad;
+            ctx.lineWidth=L.thick;
+            const step=Math.max(2,Math.round(w/200));
+            for(let x=0;x<=w;x+=step){
+                let wave = Math.sin(x/(L.wave*w)*2*Math.PI + time*L.speed)*L.amp +
+                           Math.sin(x*0.02+time*L.speed*5)*(L.amp*0.1);
+                if(Math.random()<0.003) wave += (Math.random()-0.5)*50;
+                const vibrate = (Math.random()-0.5)*2;
+                const dist = Math.hypot(x-mouse.x,h/2-mouse.y);
+                const m = 1-Math.min(dist/(w*0.8),1);
+                const y = h*0.5 + wave*(0.8+m*0.4) + vibrate;
+                if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+            }
+            ctx.stroke();
+        });
+
+        // Reticolo digitale leggero
+        gridLines.forEach(l=>{
+            ctx.beginPath();
+            ctx.strokeStyle=`rgba(0,255,255,${l.alpha})`;
+            ctx.moveTo(l.x,l.y);
+            ctx.lineTo(l.x+Math.sin(time*0.001+l.x/100)*20,l.y+l.len);
+            ctx.lineWidth=1;
+            ctx.stroke();
+            l.y+=l.speed;
+            if(l.y>h){ l.y=-l.len; l.x=Math.random()*w; }
+        });
+
+        // Particelle fluttuanti con flash
+        particles.forEach(p=>{
+            ctx.beginPath();
+            let alpha = p.alpha;
+            const d = Math.hypot(p.x-mouse.x,p.y-mouse.y);
+            if(d<100) alpha += (100-d)/300;
+            ctx.fillStyle=`rgba(255,200,255,${alpha})`;
+            ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            ctx.fill();
+            p.y -= p.speed;
+            if(p.y<-5){ p.y=h+5; p.x=Math.random()*w; }
+        });
+
+        // Vapore di luce leggero
+        for(let i=0;i<3;i++){
+            ctx.beginPath();
+            const x = w*0.5 + Math.sin(time*0.0005+i)*w*0.15;
+            const y = h*0.5 + Math.cos(time*0.0003+i)*h*0.1;
+            const rad = 60 + Math.sin(time*0.001+i)*40;
+            const grd=ctx.createRadialGradient(x,y,0,x,y,rad);
+            grd.addColorStop(0,`rgba(180,100,255,0.02)`);
+            grd.addColorStop(1,'rgba(0,0,0,0)');
+            ctx.fillStyle=grd;
             ctx.fillRect(0,0,w,h);
-            
-            // Set blend mode to 'lighter' for neon effect
-            ctx.globalCompositeOperation = 'lighter'; 
+        }
 
-            layers.forEach((L, idx) => { 
-                ctx.beginPath(); 
-                
-                // Dynamic Color Gradient for the wave
-                const grad = ctx.createLinearGradient(0, 0, w, 0); 
-                const hueA = L.hue; 
-                const hueB = (L.hue + 60) % 360; 
-                grad.addColorStop(0, `hsla(${hueA},100%,60%,${L.alpha})`); 
-                grad.addColorStop(0.5, `hsla(${hueB},90%,58%,${L.alpha * 0.9})`); 
-                grad.addColorStop(1, `hsla(${(hueA+120)%360},85%,50%,${L.alpha*0.7})`); 
-                ctx.strokeStyle = grad; 
-                
-                ctx.lineWidth = 1.2 * L.thickness; 
-                ctx.lineCap = 'round'; 
-                
-                const step = Math.max(2, Math.round(w / 220)); 
-                
-                for (let x = 0; x <= w; x += step) { 
-                    // Complex wave generation:
-                    // 1. Primary low-frequency sine wave for main shape.
-                    const primaryWave = Math.sin(x / (L.wavelength * w) * 2 * Math.PI + time * L.speed * 0.7);
-                    
-                    // 2. Faster, smaller sine wave for ripple/detail.
-                    const rippleWave = Math.sin(x / (L.wavelength * w) * 8 * Math.PI + time * L.speed * 4) * (L.amplitude * 0.15);
-                    
-                    // 3. Glitch/Flicker component (time-based vertical noise).
-                    const flicker = Math.sin(time * L.speed * 2 + idx * 10) * Math.sin(x/500) * (L.amplitude * 0.05); 
-                    
-                    // Calculate final Y position
-                    const y = h * 0.5 + 
-                              (primaryWave * L.amplitude) + 
-                              rippleWave +
-                              flicker;
+        // Scanlines leggere
+        ctx.globalCompositeOperation='overlay';
+        ctx.fillStyle='rgba(255,255,255,0.03)';
+        for(let y=0;y<h;y+=4) ctx.fillRect(0, y, w, 1);
 
-                    if (x === 0) ctx.moveTo(x, y); 
-                    else ctx.lineTo(x, y); 
-                } 
-                
-                ctx.stroke(); 
-                
-                // Add subtle white glow outline (faster/thinner)
-                ctx.lineWidth = 0.5 * L.thickness;
-                ctx.strokeStyle = `rgba(255,255,255,${L.alpha*0.1})`;
-                ctx.stroke();
-            }); 
-            
-            ctx.globalCompositeOperation = 'source-over';
-            requestAnimationFrame(draw);
-        } 
+        ctx.globalCompositeOperation='source-over';
         requestAnimationFrame(draw);
-    })();
+    }
+
+    requestAnimationFrame(draw);
+})();
+
 </script>
 <script>
     const { createApp, ref, computed, onMounted, onBeforeUnmount, watch, nextTick } = Vue
