@@ -11,7 +11,7 @@ RUN npm install --omit=dev
 # Copia il resto del codice (index.js, public/, ecc.)
 COPY . .
 
-# Espone la porta standard di Hugging Face
+# Espone la porta 
 EXPOSE 8080 
 
 # Comando di avvio dell'applicazione
