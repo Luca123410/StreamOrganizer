@@ -2407,10 +2407,10 @@ body.light-mode .lang-select {
 		   // --- Translations ---
     const translations = {
     it: {
-        meta: { title: "STREMIO | CONSOLE DI COMANDO ADDON" },
-        h1: "STREMIO | CONSOLE DI COMANDO ADDON",
+        meta: { title: "StreamOrder ⚡ Console di Comando Addon" },
+        h1: "StreamOrder ⚡ Console di Comando Addon",
         subtitle: {
-            login: "Per accedere inserisci le credenziali dell'account Stremio",
+            login: "Controlla il caos. Domina i tuoi Addon.",
             monitoring: "Modalità Monitoraggio attiva",
             loggedIn: "Console rapida per gestire, ordinare e salvare gli addon"
         },
@@ -2697,10 +2697,10 @@ body.light-mode .lang-select {
         }
     },
     en: {
-        meta: { title: "STREMIO | ADDON COMMAND CONSOLE" },
-        h1: "STREMIO | ADDON COMMAND CONSOLE",
+        meta: { title: "StreamOrder ⚡ Addon Command Console" },
+        h1: "StreamOrder ⚡ Addon Command Console",
         subtitle: {
-            login: "Enter Stremio account credentials to log in",
+            login: "Control the chaos. Dominate your Addons.",
             monitoring: "Monitoring Mode active",
             loggedIn: "Quick console to manage, order, and save addons"
         },
@@ -2987,10 +2987,10 @@ body.light-mode .lang-select {
         }
     },
     fr: {
-        meta: { title: "STREMIO | CONSOLE DE COMMANDE DES ADDONS" },
-        h1: "STREMIO | CONSOLE DE COMMANDE DES ADDONS",
+        meta: { title: "StreamOrder ⚡ Console de Commande des Addons" },
+        h1: "StreamOrder ⚡ Console de Commande des Addons",
         subtitle: {
-            login: "Entrez les identifiants de votre compte Stremio pour vous connecter",
+            login: "Contrôlez le chaos. Dominez vos addons.", // 
             monitoring: "Mode de surveillance actif",
             loggedIn: "Console rapide pour gérer, ordonner et sauvegarder les addons"
         },
@@ -3277,10 +3277,10 @@ body.light-mode .lang-select {
         }
     },
     de: {
-        meta: { title: "STREMIO | ADDON-BEFEHLSKONSOLE" },
-        h1: "STREMIO | ADDON-BEFEHLSKONSOLE",
+        meta: { title: "StreamOrder ⚡ Addon-Befehlskonsole" },
+        h1: "StreamOrder ⚡ Addon-Befehlskonsole",
         subtitle: {
-            login: "Geben Sie die Stremio-Kontodaten ein, um sich anzumelden",
+            login: "Kontrolliere das Chaos. Beherrsche deine Addons.",
             monitoring: "Überwachungsmodus aktiv",
             loggedIn: "Schnellkonsole zum Verwalten, Sortieren und Speichern von Addons"
         },
@@ -3567,10 +3567,10 @@ body.light-mode .lang-select {
         }
     },
     es: {
-        meta: { title: "STREMIO | CONSOLA DE COMANDOS DE ADDONS" },
-        h1: "STREMIO | CONSOLA DE COMANDOS DE ADDONS",
+        meta: { title: "StreamOrder ⚡ Consola de Comando de Addons" },
+        h1: "StreamOrder ⚡ Consola de Comando de Addons",
         subtitle: {
-            login: "Introduce las credenciales de tu cuenta de Stremio para iniciar sesión",
+            login: "Controla el caos. Domina tus addons.",
             monitoring: "Modo de monitorización activo",
             loggedIn: "Consola rápida para gestionar, ordenar y guardar addons"
         },
@@ -3857,10 +3857,10 @@ body.light-mode .lang-select {
         }
     },
     uk: {
-        meta: { title: "STREMIO | КОНСОЛЬ КЕРУВАННЯ ДОДАТКАМИ" },
-        h1: "STREMIO | КОНСОЛЬ КЕРУВАННЯ ДОДАТКАМИ",
+        meta: { title: "StreamOrder ⚡ Консоль керування додатками" },
+        h1: "StreamOrder ⚡ Консоль керування додатками",
         subtitle: {
-            login: "Введіть дані облікового запису Stremio для входу",
+            login: "Контролюй хаос. Пануй над своїми додатками.",
             monitoring: "Режим моніторингу активний",
             loggedIn: "Швидка консоль для керування, сортування та збереження додатків"
         },
@@ -4147,10 +4147,10 @@ body.light-mode .lang-select {
         }
     },
     pt: {
-        meta: { title: "STREMIO | CONSOLE DE COMANDO DE ADDONS" },
-        h1: "STREMIO | CONSOLE DE COMANDO DE ADDONS",
+        meta: { title: "StreamOrder ⚡ Console de Comando de Addons" },
+        h1: "StreamOrder ⚡ Console de Comando de Addons",
         subtitle: {
-            login: "Digite as credenciais da sua conta Stremio para entrar",
+            login: "Controle o caos. Domine os seus addons.",
             monitoring: "Modo de Monitoramento Ativo",
             loggedIn: "Console rápido para gerenciar, ordenar e salvar addons"
         },
@@ -4751,44 +4751,90 @@ body.light-mode .lang-select {
                 if ((isLoading.value && !isUpdating.value) || isMonitoring.value || !isLoggedIn.value) { if (isManual) showToast(isMonitoring.value ? t.value('addon.monitorModeActive') : "Operazione già in corso o non loggato.", 'error'); return; }
                 isLoading.value = true; isUpdating.value = true; showToast(t.value('autoUpdate.running'), 'info');
                 let updatedCount = 0; let failedCount = 0; let hasManifestChanges = false;
-                const fetchAndUpdateAddon = async (addon) => {
-                    // NUOVO: Salta se l'addon è escluso
-                    if (addon.disableAutoUpdate) {
-                         console.log(`Skipping auto-update for excluded addon: ${addon.manifest.name}`);
-                         return { status: 'fulfilled', id: addon.manifest.id, skipped: true };
-                    }
-                    // FINE NUOVO
-                    try {
-                        const response = await fetch(`${apiBaseUrl}/api/fetch-manifest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ manifestUrl: addon.transportUrl }) });
-                        const responseText = await response.text(); let newManifest; try { newManifest = JSON.parse(responseText); } catch (e) { throw new Error(`Invalid JSON response.`); }
-                        if (!response.ok || newManifest.error) throw new Error(newManifest.error?.message || "Failed to fetch");
-                        const getComparableManifest = (m) => { const { version, description, logo, types, resources, id, behaviorHints, configurable } = m; return JSON.stringify({ version, description, logo, types, resources, id, behaviorHints, configurable }); };
-                        const oldManifestComparable = getComparableManifest(addon.manifest); const newManifestComparable = getComparableManifest(newManifest);
-                        if (oldManifestComparable !== newManifestComparable) {
-                            hasManifestChanges = true; updatedCount++; const currentName = addon.manifest.name;
-                            addon.manifest = { ...newManifest, name: currentName }; addon.newLocalName = currentName;
-                            return { status: 'fulfilled', id: addon.manifest.id };
-                        } return { status: 'fulfilled', id: addon.manifest.id, noChange: true };
-                    } catch (error) { console.error(`Failed to update ${addon.manifest.name}:`, error); failedCount++; return { status: 'rejected', id: addon.manifest.id, reason: error.message }; }
-                };
-                const results = await Promise.allSettled(addons.value.map(fetchAndUpdateAddon));
-                if (hasManifestChanges) { showToast(t.value('autoUpdate.foundChanges', { count: updatedCount, failed: failedCount }), 'info'); hasUnsavedChanges.value = true; await saveOrder(); }
-                 else { showToast(t.value('autoUpdate.noChanges', { failed: failedCount }), failedCount > 0 ? 'error' : 'success'); isLoading.value = false; }
-                try { localStorage.setItem('stremioLastAutoUpdate', new Date().toISOString()); lastUpdateCheck.value = new Date().toISOString(); } catch (e) { console.warn("Cannot save last update time to localStorage."); }
-                isUpdating.value = false;
-            };
-            const scheduleUpdateCheck = () => {
-                const now = new Date(); const nextUpdate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 3, 0, 0, 0);
-                if (now.getTime() > nextUpdate.getTime()) { nextUpdate.setDate(nextUpdate.getDate() + 1); }
-                const timeToNextUpdate = nextUpdate.getTime() - now.getTime(); console.log(`Next auto-update check scheduled for: ${nextUpdate.toLocaleString()}`);
-                setTimeout(async () => { console.log("Running scheduled auto-update check..."); if (isLoggedIn.value && isAutoUpdateEnabled.value && !isMonitoring.value) { await runAutoUpdate(false); } scheduleUpdateCheck(); }, timeToNextUpdate);
-            };
-            const toggleAddonEnabled = (addon) => { 
-                if (!isMonitoring.value) {
-                    // MODIFICATO: Chiama recordAction con la descrizione dell'azione
-                    recordAction(t.value(addon.isEnabled ? 'actions.disabledAddon' : 'actions.enabledAddon', { name: addon.manifest.name })); 
+               const fetchAndUpdateAddon = async (addon) => {
+                const transportUrl = addon.transportUrl || '';
+                const addonName = addon.manifest?.name || 'Unknown';
+                
+                // --- LOGICA DI SKIP ---
+                const isCinemeta = transportUrl.includes('cinemeta.strem.io');
+                const isHttp = transportUrl.startsWith('http://') && !transportUrl.startsWith('https://');
+                const isLocked = addon.disableAutoUpdate; // La tua logica esistente
+
+                if (isLocked || isCinemeta || isHttp || !transportUrl) {
+                    let reason = 'URL non valido';
+                    if (isLocked) reason = 'Bloccato (disableAutoUpdate)';
+                    if (isCinemeta) reason = 'Cinemeta (ignorare)';
+                    if (isHttp) reason = 'URL HTTP (insicuro)';
+                    
+                    console.log(`Skipping auto-update for: ${addonName} (${reason})`);
+                    return { status: 'fulfilled', id: addon.manifest.id, skipped: true };
                 }
-            };
+                // --- FINE LOGICA SKIP ---
+
+                // Il resto della tua funzione rimane invariato
+                try {
+                    const response = await fetch(`${apiBaseUrl}/api/fetch-manifest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ manifestUrl: addon.transportUrl }) });
+                    const responseText = await response.text(); let newManifest; try { newManifest = JSON.parse(responseText); } catch (e) { throw new Error(`Invalid JSON response.`); }
+                    if (!response.ok || newManifest.error) throw new Error(newManifest.error?.message || "Failed to fetch");
+                    
+                    const getComparableManifest = (m) => { const { version, description, logo, types, resources, id, behaviorHints, configurable } = m; return JSON.stringify({ version, description, logo, types, resources, id, behaviorHints, configurable }); };
+                    const oldManifestComparable = getComparableManifest(addon.manifest);
+                    const newManifestComparable = getComparableManifest(newManifest);
+                    
+                    if (oldManifestComparable !== newManifestComparable) {
+                        hasManifestChanges = true; updatedCount++;
+                        
+                        // La tua logica per preservare il nome è corretta
+                        const currentName = addon.manifest.name;
+                        addon.manifest = { ...newManifest, name: currentName };
+                        addon.newLocalName = currentName;
+                        
+                        return { status: 'fulfilled', id: addon.manifest.id };
+                    } 
+                    return { status: 'fulfilled', id: addon.manifest.id, noChange: true };
+                } catch (error) { 
+                    console.error(`Failed to update ${addonName}:`, error); 
+                    failedCount++; 
+                    return { status: 'rejected', id: addon.manifest.id, reason: error.message }; 
+                }
+            }; // <-- Fine di fetchAndUpdateAddon
+
+            // Il resto della funzione runAutoUpdate (dal tuo snippet)
+            const results = await Promise.allSettled(addons.value.map(fetchAndUpdateAddon));
+            
+            if (hasManifestChanges) { 
+                showToast(t.value('autoUpdate.foundChanges', { count: updatedCount, failed: failedCount }), 'info'); 
+                hasUnsavedChanges.value = true; 
+                await saveOrder(); // saveOrder gestirà isLoading.value = false
+            } else { 
+                showToast(t.value('autoUpdate.noChanges', { failed: failedCount }), failedCount > 0 ? 'error' : 'success'); 
+                isLoading.value = false; // Dobbiamo impostarlo qui se saveOrder non viene chiamato
+            }
+            
+            try { 
+                localStorage.setItem('stremioLastAutoUpdate', new Date().toISOString()); 
+                lastUpdateCheck.value = new Date().toISOString(); 
+            } catch (e) { 
+                console.warn("Cannot save last update time to localStorage."); 
+            }
+            
+            isUpdating.value = false;
+        }; // <-- Questa è la parentesi graffa che chiude runAutoUpdate
+
+        // Le altre funzioni che hai incollato (sono corrette e rimangono invariate)
+        const scheduleUpdateCheck = () => {
+            const now = new Date(); const nextUpdate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 3, 0, 0, 0);
+            if (now.getTime() > nextUpdate.getTime()) { nextUpdate.setDate(nextUpdate.getDate() + 1); }
+            const timeToNextUpdate = nextUpdate.getTime() - now.getTime(); console.log(`Next auto-update check scheduled for: ${nextUpdate.toLocaleString()}`);
+            setTimeout(async () => { console.log("Running scheduled auto-update check..."); if (isLoggedIn.value && isAutoUpdateEnabled.value && !isMonitoring.value) { await runAutoUpdate(false); } scheduleUpdateCheck(); }, timeToNextUpdate);
+        };
+        
+        const toggleAddonEnabled = (addon) => { 
+            if (!isMonitoring.value) {
+                // MODIFICATO: Chiama recordAction con la descrizione dell'azione
+                recordAction(t.value(addon.isEnabled ? 'actions.disabledAddon' : 'actions.enabledAddon', { name: addon.manifest.name })); 
+            }
+        };
             // NUOVO: Toggle per disabilitare l'auto-update
             const toggleAddonDisableAutoUpdate = (addon) => {
                  if (!isMonitoring.value) {
