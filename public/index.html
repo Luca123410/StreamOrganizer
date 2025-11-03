@@ -25,7 +25,7 @@
     padding: 0;
 }
 
-/* Queste sono le tue regole di default (DARK MODE)
+/*  (DARK MODE)
 */
 html, body {
     min-height: 100vh;
@@ -367,12 +367,12 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         /* ====== HEADER ====== */
        header {
     display: flex;
-    flex-direction: column;       /* colonna */
-    align-items: center;          /* centra orizzontalmente */
-    justify-content: center;      /* centra verticalmente */
-    gap: 6px;                     /* spazio tra gli elementi */
+    flex-direction: column;       
+    align-items: center;          
+    justify-content: center;      
+    gap: 6px;                     
     position: relative;
-    min-height: 150px;            /* altezza minima header, modificabile */
+    min-height: 150px;            
 }
 
        h1 {
@@ -457,7 +457,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
             border: 1px solid rgba(187,134,252,0.06); 
             box-shadow: 0 6px 18px rgba(0,0,0,0.6); 
             min-height: auto; 
-            flex-grow: 1; /* Nuovo: Permette al pannello di espandersi nel main-content */
+            flex-grow: 1; 
             display: flex;
             flex-direction: column;
         }
@@ -487,7 +487,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         .addon-list:grabbing { cursor: grabbing; }
         .addon-item {
             display: flex;
-            flex-wrap: wrap; /* AGGIUNTO: Permette ai dettagli di andare a capo */
+            flex-wrap: wrap; 
             align-items: center;
             gap: 12px;
             padding: 12px;
@@ -577,8 +577,8 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         .search-input-container input { background: linear-gradient(180deg, rgba(14,9,18,0.85), rgba(16,10,22,0.75)); border: 1px solid rgba(187,134,252,0.2); box-shadow: 0 0 15px rgba(187,134,252,0.1); height: 40px; width: 100%; padding-left: 10px; }
         /* Pulsante Verifica Stato - Aggiunto stile per spaziatura */
         .check-status-button-container {
-            margin-top: 1rem; /* Aggiunto margine sopra */
-            margin-bottom: 1.5rem; /* Aumentato margine sotto */
+            margin-top: 1rem; 
+            margin-bottom: 1.5rem; 
         }
         
         /* ====== ▼▼▼ CORREZIONE MODAL (Problema Screenshot) ▼▼▼ ====== */
@@ -590,8 +590,8 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
             backdrop-filter: blur(5px);
             z-index: 1000;
             display: flex;
-            align-items: center;      /* <-- MODIFICATO: Centra verticalmente */
-            /* padding-top: 5vh; */   /* <-- MODIFICATO: Riga rimossa/commentata */
+            align-items: center;      
+            /* padding-top: 5vh; */   
             justify-content: center;
             opacity: 0;
             visibility: hidden;
@@ -619,7 +619,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         @keyframes spin { to { transform: rotate(360deg); } }
         /* ====== ▼▼▼ Stili Toast MODIFICATI (FIXED) ▼▼▼ ====== */
         #toast-container {
-            position: fixed; /* MODIFICATO: Riportato a fixed per visibilità globale */
+            position: fixed; 
             top: 20px;
             right: 20px;
             z-index: 10000;
@@ -660,8 +660,8 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
             transition: all 0.2s ease-out;
         }
         .details-toggle-btn.expanded {
-            transform: translateY(-2px) rotate(90deg); /* Ruota la freccia */
-            background: rgba(187, 134, 252, 0.2); /* Evidenzia quando aperto */
+            transform: translateY(-2px) rotate(90deg); 
+            background: rgba(187, 134, 252, 0.2); 
             box-shadow: 0 4px 10px rgba(187,134,252,0.15);
         }
         .addon-extra-details {
@@ -865,17 +865,17 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
 
         /* AGGIUNTO per risolvere il problema di overflow su mobile quando ci sono molti profili */
         .profile-list-wrapper {
-            /* Imposta un'altezza massima per la lista profili, in modo che non spinga il form fuori dallo schermo */
-            max-height: 280px; /* Aumentato leggermente per i telefoni più grandi */
+            
+            max-height: 280px; 
             overflow-y: auto;
-            padding-right: 5px; /* Spazio per la scrollbar */
-            flex-shrink: 1; /* Nuovo: Permette alla lista di profili di ridursi in uno spazio più piccolo */
+            padding-right: 5px; 
+            flex-shrink: 1; 
         }
 
         /* Regolazione per schermi molto piccoli */
         @media (max-width: 480px) {
             .profile-list-wrapper {
-                max-height: 240px; /* Altezza di fallback per schermi molto corti */
+                max-height: 240px; 
             }
             .profile-name-display {
                 font-size: 0.9rem;
