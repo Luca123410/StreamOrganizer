@@ -307,39 +307,40 @@ a,
 }
 
 /* ======================
-   Responsive
-   ====================== */
+   Responsive
+   ====================== */
 @media (max-width: 1200px) {
-    #app { max-width: 1100px; }
+    #app { max-width: 1100px; }
 }
 
 @media (max-width: 960px) {
 
-    /* AGGIUNTO: Ottimizzazione performance per mobile */
+    /* Ottimizzazione performance per mobile */
     #bgCanvas {
-        animation: none !important; /* Ferma le animazioni CSS dello sfondo */
-    }
+        animation: none !important;
+    }
 
-    #app {
-        /Disattiva il blur costoso su mobile */
+    #app {
+        /* Disattiva il blur costoso su mobile */
         backdrop-filter: none !important; 
-        -webkit-backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
 
-        //
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
-        margin: 24px auto;
-        padding: 1.5rem;
-    }
-    
-    .stats-panel-container {
-        position: relative;
-        height: auto;
-        top: 0;
-        grid-column: 1 / -1;
-        grid-row: 3 / 4;
-    }
+        /* Layout mobile a colonna singola */
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto 1fr auto;
+        margin: 24px auto;
+        padding: 1.5rem;
+    }
+
+    .stats-panel-container {
+        position: relative;
+        height: auto;
+        top: 0;
+        grid-column: 1 / -1;
+        grid-row: auto;
+    }
 }
+
 
 /* ======================
    Accessibilità & Focus
@@ -1893,13 +1894,34 @@ document.addEventListener('touchmove', function(e) {
         <div class="main-content">
             <div class="panel" v-if="!isLoggedIn">
                 <!-- Login/Monitor Forms -->
-                <form @submit.prevent="login" v-if="!showAdminInput" style="margin-bottom:0;"> <!-- MARGIN BOTTTOM A 0 -->
-                    <h2 style="margin:0 0 8px 0; color:#BB86FC; font-family:'Orbitron',sans-serif;">{{ t('login.title') }}</h2>
-                    <div class="form-group" style="margin-bottom:12px;"><input type="email" v-model="email" :placeholder="t('login.emailPlaceholder')" required></div>
-                    <div class="form-group" style="margin-bottom:12px;"><input type="password" v-model="password" :placeholder="t('login.passwordPlaceholder')" required></div>
-                    <button type="submit" class="primary-btn" :disabled="isLoading">{{ isLoading ? t('login.loading') : t('login.button') }}</button>
-                </form>
+<form @submit.prevent="login" v-if="!showAdminInput" style="margin-bottom:0;">
+    <h2 style="margin:0 0 8px 0; color:#BB86FC; font-family:'Orbitron',sans-serif;">{{ t('login.title') }}</h2>
 
+    <div v-if="loginMode === 'password'">
+        <div class="form-group" style="margin-bottom:12px;">
+            <input type="email" v-model="email" :placeholder="t('login.emailPlaceholder')" required>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+            <input type="password" v-model="password" :placeholder="t('login.passwordPlaceholder')" required>
+        </div>
+    </div>
+
+    <div v-if="loginMode === 'token'">
+        <div class="form-group" style="margin-bottom:12px;">
+            <input type="text" v-model="providedAuthKey" :placeholder="t('login.tokenPlaceholder')" required>
+        </div>
+    </div>
+
+    <button type="submit" class="primary-btn" :disabled="isLoading">{{ isLoading ? t('login.loading') : t('login.button') }}</button>
+
+    <button type="button" @click="toggleLoginMode" class="secondary-btn" 
+            style="width: 100%; margin-top: 10px; 
+                   background: linear-gradient(90deg, rgba(187,134,252,0.15), rgba(3,218,198,0.1)); 
+                   border: 1px solid rgba(187,134,252,0.2); 
+                   color: #BB86FC;">
+        {{ loginMode === 'password' ? t('login.useToken') : t('login.usePassword') }}
+    </button>
+</form>
                 <!-- NUOVO: Profile Management Area -->
                 <div class="profile-management" v-if="!showAdminInput && savedProfiles.length > 0" style="margin-top: 1.5rem;">
                     <h3 style="margin: 0 0 10px 0; color:#7FF7E1; font-family:'Orbitron',sans-serif; font-size:1.05rem; border-top: 1px solid rgba(187,134,252,0.1); padding-top: 15px;">{{ t('profiles.title') }}</h3>
@@ -2407,7 +2429,8 @@ document.addEventListener('touchmove', function(e) {
             const isMonitoring = ref(false);
             const searchQuery = ref(''); 
             const hasUnsavedChanges = ref(false); 
-            
+            const loginMode = ref('password'); // 'password' o 'token'
+        const providedAuthKey = ref(''); // Per l'input del token
             // AGGIUNTO: Ref per il valore di ricerca con debounce
             const actualSearchQuery = ref('');
             const debouncedSearchHandler = debounce((newValue) => {
@@ -2494,12 +2517,15 @@ document.addEventListener('touchmove', function(e) {
             }
         },
         login: {
-            title: "Accesso Utente",
-            emailPlaceholder: "E-mail Stremio",
-            passwordPlaceholder: "Password Stremio",
-            button: "ACCEDI",
-            loading: "Accesso in corso..."
-        },
+    title: "Accesso Utente",
+    emailPlaceholder: "E-mail Stremio",
+    passwordPlaceholder: "Password Stremio",
+    tokenPlaceholder: "Il tuo AuthKey (Token) di Stremio", // <-- NUOVO
+    useToken: "Accedi con Token (AuthKey)",             // <-- NUOVO
+    usePassword: "Accedi con Email/Password",          // <-- NUOVO
+    button: "ACCEDI",
+    loading: "Accesso in corso..."
+},
         monitor: {
             title: "Modalità Monitoraggio",
             keyPlaceholder: "La tua Chiave di Monitoraggio",
@@ -2783,13 +2809,16 @@ document.addEventListener('touchmove', function(e) {
                 s8: "If you have unsaved changes, this button will also appear. It's a handy reminder!"
             }
         },
-        login: {
-            title: "User Login",
-            emailPlaceholder: "Stremio E-mail",
-            passwordPlaceholder: "Stremio Password",
-            button: "LOGIN",
-            loading: "Logging in..."
-        },
+      login: {
+    title: "User Login",
+    emailPlaceholder: "Stremio E-mail",
+    passwordPlaceholder: "Stremio Password",
+    tokenPlaceholder: "Your Stremio AuthKey (Token)", // <-- NUOVO
+    useToken: "Login with Token (AuthKey)",             // <-- NUOVO
+    usePassword: "Login with Email/Password",          // <-- NUOVO
+    button: "LOGIN",
+    loading: "Logging in..."
+},
         monitor: {
             title: "Monitoring Mode",
             keyPlaceholder: "Your Monitoring Key",
@@ -3073,13 +3102,16 @@ document.addEventListener('touchmove', function(e) {
                 s8: "Si vous avez des modifications non sauvegardées, ce bouton apparaîtra également. C'est un rappel pratique!"
             }
         },
-        login: {
-            title: "Connexion Utilisateur",
-            emailPlaceholder: "E-mail Stremio",
-            passwordPlaceholder: "Mot de passe Stremio",
-            button: "CONNEXION",
-            loading: "Connexion en cours..."
-        },
+      login: {
+    title: "Connexion Utilisateur",
+    emailPlaceholder: "E-mail Stremio",
+    passwordPlaceholder: "Mot de passe Stremio",
+    tokenPlaceholder: "Votre AuthKey (Token) Stremio", // <-- NUOVO
+    useToken: "Connexion avec Token (AuthKey)",       // <-- NUOVO
+    usePassword: "Connexion avec Email/Mot de passe", // <-- NUOVO
+    button: "CONNEXION",
+    loading: "Connexion en cours..."
+},
         monitor: {
             title: "Mode de Surveillance",
             keyPlaceholder: "Votre Clé de Surveillance",
@@ -3363,13 +3395,16 @@ document.addEventListener('touchmove', function(e) {
                 s8: "Wenn Sie ungespeicherte Änderungen haben, erscheint auch dieser Button. Eine nützliche Erinnerung!"
             }
         },
-        login: {
-            title: "Benutzer-Login",
-            emailPlaceholder: "Stremio E-Mail",
-            passwordPlaceholder: "Stremio Passwort",
-            button: "EINLOGGEN",
-            loading: "Wird eingeloggt..."
-        },
+       login: {
+    title: "Benutzer-Login",
+    emailPlaceholder: "Stremio E-Mail",
+    passwordPlaceholder: "Stremio Passwort",
+    tokenPlaceholder: "Dein Stremio AuthKey (Token)", // <-- NUOVO
+    useToken: "Mit Token (AuthKey) anmelden",         // <-- NUOVO
+    usePassword: "Mit E-Mail/Passwort anmelden",     // <-- NUOVO
+    button: "EINLOGGEN",
+    loading: "Wird eingeloggt..."
+},
         monitor: {
             title: "Überwachungsmodus",
             keyPlaceholder: "Ihr Überwachungsschlüssel",
@@ -3653,13 +3688,16 @@ document.addEventListener('touchmove', function(e) {
                 s8: "Si tienes cambios sin guardar, este botón también aparecerá. ¡Es un recordatorio útil!"
             }
         },
-        login: {
-            title: "Inicio de Sesión de Usuario",
-            emailPlaceholder: "E-mail de Stremio",
-            passwordPlaceholder: "Contraseña de Stremio",
-            button: "INICIAR SESIÓN",
-            loading: "Iniciando sesión..."
-        },
+      login: {
+    title: "Inicio de Sesión de Usuario",
+    emailPlaceholder: "E-mail de Stremio",
+    passwordPlaceholder: "Contraseña de Stremio",
+    tokenPlaceholder: "Tu AuthKey (Token) de Stremio", // <-- NUOVO
+    useToken: "Iniciar sesión con Token (AuthKey)",   // <-- NUOVO
+    usePassword: "Iniciar sesión con Email/Contraseña", // <-- NUOVO
+    button: "INICIAR SESIÓN",
+    loading: "Iniciando sesión..."
+},
         monitor: {
             title: "Modo de Monitorización",
             keyPlaceholder: "Tu Clave de Monitorización",
@@ -3943,13 +3981,16 @@ document.addEventListener('touchmove', function(e) {
                 s8: "Якщо у вас є незбережені зміни, ця кнопка також з'явиться. Це зручне нагадування!"
             }
         },
-        login: {
-            title: "Вхід користувача",
-            emailPlaceholder: "E-mail Stremio",
-            passwordPlaceholder: "Пароль Stremio",
-            button: "УВІЙТИ",
-            loading: "Вхід..."
-        },
+      login: {
+    title: "Вхід користувача",
+    emailPlaceholder: "E-mail Stremio",
+    passwordPlaceholder: "Пароль Stremio",
+    tokenPlaceholder: "Ваш AuthKey (Токен) Stremio", // <-- NUOVO
+    useToken: "Увійти з Токеном (AuthKey)",       // <-- NUOVO
+    usePassword: "Увійти з Email/Паролем",      // <-- NUOVO
+    button: "УВІЙТИ",
+    loading: "Вхід..."
+},
         monitor: {
             title: "Режим моніторингу",
             keyPlaceholder: "Ваш ключ моніторингу",
@@ -4233,13 +4274,16 @@ document.addEventListener('touchmove', function(e) {
                 s8: "Se você tiver alterações não salvas, este botão também aparecerá. É um lembrete útil!"
             }
         },
-        login: {
-            title: "Login de Usuário",
-            emailPlaceholder: "E-mail do Stremio",
-            passwordPlaceholder: "Senha do Stremio",
-            button: "LOGIN",
-            loading: "Fazendo login..."
-        },
+     login: {
+    title: "Login de Usuário",
+    emailPlaceholder: "E-mail do Stremio",
+    passwordPlaceholder: "Senha do Stremio",
+    tokenPlaceholder: "Seu AuthKey (Token) do Stremio", // <-- NUOVO
+    useToken: "Login com Token (AuthKey)",             // <-- NUOVO
+    usePassword: "Login com Email/Senha",              // <-- NUOVO
+    button: "LOGIN",
+    loading: "Fazendo login..."
+},
         monitor: {
             title: "Modo de Monitoramento",
             keyPlaceholder: "Sua Chave de Monitoramento",
@@ -5077,20 +5121,77 @@ document.addEventListener('touchmove', function(e) {
                 hasUnsavedChanges.value = false;
             };
 
-            const login = async () => {
-                isLoading.value = true;
-                try {
-                    const response = await fetch(`${apiBaseUrl}/api/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email.value, password: password.value }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || 'Login failed.');
-                    authKey.value = data.authKey; isLoggedIn.value = true; isMonitoring.value = false;
-                    sessionStorage.setItem('stremioAuthKey', authKey.value); sessionStorage.setItem('stremioEmail', email.value); sessionStorage.setItem('stremioIsMonitoring', 'false'); sessionStorage.setItem('stremioAddonList', JSON.stringify(data.addons.map(mapAddon)));
-                    addons.value = data.addons.map(mapAddon);
-                    showWelcomeScreen.value = true;
-                    showToast(t.value('addon.loginSuccess'), 'success');
-                    // Reset log e stato
-                    history.value = []; redoStack.value = []; actionLog.value = []; redoActionLog.value = [];
-                    hasUnsavedChanges.value = false;
-                } catch (err) { showToast(err.message, 'error'); } finally { isLoading.value = false; }
-            };
+        // Sostituisci la vecchia funzione login() con questa
+const login = async () => {
+    isLoading.value = true;
+    let payload;
+    
+    if (loginMode.value === 'password') {
+        payload = {
+            email: email.value,
+            password: password.value
+        };
+    } else {
+        // L'email è opzionale, usata solo per salvare il profilo.
+        payload = {
+            authKey: providedAuthKey.value,
+            email: email.value // Invia anche l'email se fornita
+        };
+    }
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        
+        if (!response.ok) {
+            const errorMsg = data.error?.message || data.message || 'Login failed.';
+            throw new Error(errorMsg);
+        }
+
+        authKey.value = data.authKey;
+        isLoggedIn.value = true;
+        isMonitoring.value = false;
+        
+        // Se l'email è vuota dopo il login con token (non fornita), usa un placeholder
+        if (loginMode.value === 'token' && !email.value) {
+            email.value = 'TokenAccessUser'; // Placeholder
+        }
+        
+        sessionStorage.setItem('stremioAuthKey', authKey.value);
+        sessionStorage.setItem('stremioEmail', email.value); // Salva l'email
+        sessionStorage.setItem('stremioIsMonitoring', 'false');
+        sessionStorage.setItem('stremioAddonList', JSON.stringify(data.addons.map(mapAddon)));
+        
+        addons.value = data.addons.map(mapAddon);
+        showWelcomeScreen.value = true;
+        showToast(t.value('addon.loginSuccess'), 'success');
+        
+        history.value = []; redoStack.value = []; actionLog.value = []; redoActionLog.value = [];
+        hasUnsavedChanges.value = false;
+        
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+// ▼▼▼ AGGIUNGI ANCHE QUESTA NUOVA FUNZIONE (dopo la funzione login) ▼▼▼
+const toggleLoginMode = () => {
+    if (loginMode.value === 'password') {
+        loginMode.value = 'token';
+    } else {
+        loginMode.value = 'password';
+    }
+    // Resetta gli input quando cambi
+    password.value = '';
+    providedAuthKey.value = '';
+    // Non resettare l'email, potrebbe servire in entrambe le modalità
+};
             
             // Logica Theme
             const applyTheme = (isLight) => {
@@ -5348,7 +5449,11 @@ document.addEventListener('touchmove', function(e) {
             return { email, password, authKey, addons, isLoggedIn, isLoading, newAddonUrl, fileInput, adminClickCount, showAdminInput, adminKey, targetEmail, isMonitoring, searchQuery, filteredAddons, login, logout, incrementAdminClick, monitorLogin, exportBackup, triggerFileInput, handleFileImport, checkAllAddonsStatus, addNewAddon, saveOrder, startEdit, finishEdit, moveUp, moveDown, moveTop, moveBottom, removeAddon, toggleAddonEnabled, toggleAddonDisableAutoUpdate, openConfiguration, copyManifestUrl, hasUnsavedChanges, history, redoStack, actionLog, redoActionLog, undo, redo, activeFilter, draggableList, onDragEnd, lang, t, shareUrl, shareInput, generateShareLink, copyShareLink, importedConfigFromUrl, selectedAddons, allSelected, toggleSelectAll, enableSelected, disableSelected, removeSelected, showSearchInput, searchInputRef, toggleSearch, hideSearchOnBlur, showInstructions, dragOptions, showImportConfirm, confirmImport, closeImportConfirm, importSource, toasts, showToast, enabledCount, disabledCount, errorCount, testAddonSpeed,
                      toggleAddonDetails, getResourceNames, isAutoUpdateEnabled, lastUpdateCheck, isUpdating, runAutoUpdate,
                      showWelcomeScreen, dismissWelcomeScreen, refreshAddonList, exportTxt,
-                     // Feature 1
+                     // ▼▼▼ AGGIUNGI QUESTI ALLA LISTA ▼▼▼
+                loginMode,
+                providedAuthKey,
+                toggleLoginMode,
+					 // Feature 1
                      savedProfiles, loadProfile, saveProfile, deleteProfile, selectedProfileId, startEditProfile, finishEditProfile,
                      // Tour
                      showWelcomeTourModal, dontShowWelcomeAgain, skipTour, beginTour,
