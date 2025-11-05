@@ -16,7 +16,44 @@ app.use(express.json());
 
 // --- Funzioni di Log su File RIMOSSE ---
 
-// --- FUNZIONE CENTRALE PER RECUPERARE DATI STREMIO (CORRETTA) ---
+// --- NUOVA FUNZIONE HELPER: RECUPERA ADDON DA AUTHKEY ---
+// (Questa funzione è necessaria sia per il login con token che per /api/get-addons)
+async function getAddonsByAuthKey(authKey) {
+  if (!authKey) {
+    throw new Error("AuthKey mancante.");
+  }
+  
+  const STREMIO_API_BASE = 'https://api.strem.io/';
+  const ADDONS_GET_URL = `${STREMIO_API_BASE}api/addonCollectionGet`;
+
+  try {
+    const addonsResponse = await fetch(ADDONS_GET_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        "authKey": authKey
+      })
+    });
+
+    const addonsData = await addonsResponse.json();
+
+    if (addonsData.error || !addonsData.result) {
+      let errorMsg = addonsData.error?.message || 'Impossibile recuperare gli addon con questo AuthKey.';
+      // Errore specifico se l'authKey non è valido o scaduto
+      if (errorMsg.includes('Invalid AuthKey') || (addonsData.error && addonsData.error.code === 1010)) {
+          errorMsg = "AuthKey non valido o scaduto.";
+      }
+      throw new Error(errorMsg);
+    }
+
+    return addonsData.result.addons || [];
+
+  } catch (err) {
+    throw err;
+  }
+}
+
+// --- FUNZIONE CENTRALE PER RECUPERARE DATI STREMIO (Login Email/Pass) ---
 async function getStremioData(email, password) {
   if (!email || !password) {
     throw new Error("Email o Password mancanti.");
@@ -24,8 +61,7 @@ async function getStremioData(email, password) {
 
   const STREMIO_API_BASE = 'https://api.strem.io/';
   const LOGIN_API_URL = `${STREMIO_API_BASE}api/login`;
-  const ADDONS_GET_URL = `${STREMIO_API_BASE}api/addonCollectionGet`;
-
+  
   try {
     // 1. LOGIN (Formato body corretto)
     const loginResponse = await fetch(LOGIN_API_URL, {
@@ -44,21 +80,9 @@ async function getStremioData(email, password) {
 
     const authKey = loginData.result.authKey;
 
-    // 2. RECUPERO ADDONS (Formato body corretto)
-    const addonsResponse = await fetch(ADDONS_GET_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        "authKey": authKey
-      })
-    });
-
-    const addonsData = await addonsResponse.json();
-    if (addonsData.error || !addonsData.result) {
-      throw new Error(addonsData.error ? addonsData.error.message : 'Impossibile recuperare gli addon.');
-    }
-
-    const finalAddons = addonsData.result.addons || [];
+    // 2. RECUPERO ADDONS (usando la nuova funzione helper)
+    const finalAddons = await getAddonsByAuthKey(authKey);
+    
     return { addons: finalAddons, authKey: authKey };
 
   } catch (err) {
@@ -67,65 +91,62 @@ async function getStremioData(email, password) {
 }
 
 // ------------------------------------------
-// 1. ENDPOINT STANDARD LOGIN
+// 1. ENDPOINT STANDARD LOGIN (MODIFICATO per accettare AuthKey)
 // ------------------------------------------
 app.post('/api/login', async (req, res) => {
-  const { email, password } = req.body;
+  // Accetta email/password OPPURE authKey
+  const { email, password, authKey: providedAuthKey } = req.body;
 
-  if (!email || !password) {
-    // await writeLog(...) RIMOSSO
-    return res.status(400).json({ error: { message: "Email e password sono obbligatori." } });
+  // CASO 1: Login con Email/Password
+  if (email && password) {
+    try {
+      const data = await getStremioData(email, password); // Logga E recupera addon
+      res.json(data);
+    } catch (err) {
+      res.status(401).json({ error: { message: err.message } });
+    }
+    return; // Fine
   }
 
-  try {
-    const data = await getStremioData(email, password);
-    // await writeLog(...) RIMOSSO
-    res.json(data);
-  } catch (err) {
-    // await writeLog(...) RIMOSSO
-    res.status(401).json({ error: { message: err.message } });
+  // CASO 2: Login con AuthKey (Token)
+  if (providedAuthKey) {
+    try {
+      // Verifica l'authKey e recupera gli addon
+      const addons = await getAddonsByAuthKey(providedAuthKey); 
+      
+      // Se ha successo, restituisce lo stesso formato del login normale
+      // (l'email è usata solo dal frontend, qui restituiamo solo il necessario)
+      res.json({ addons: addons, authKey: providedAuthKey });
+    } catch (err) {
+      // L'errore (es. AuthKey scaduto) viene gestito qui
+      res.status(401).json({ error: { message: err.message } });
+    }
+    return; // Fine
   }
+
+  // CASO 3: Dati mancanti (Questo è l'errore che ricevi ora)
+  return res.status(400).json({ error: { message: "Email/password o authKey sono obbligatori." } });
 });
 
+
 // ------------------------------------------
-// 2. ENDPOINT: RECUPERA ADDONS (per "Aggiorna Lista") (CORRETTO)
+// 2. ENDPOINT: RECUPERA ADDONS (AGGIORNATO con funzione helper)
 // ------------------------------------------
 app.post('/api/get-addons', async (req, res) => {
   const { authKey, email } = req.body;
 
   if (!authKey || !email) {
-    // await writeLog(...) RIMOSSO
     return res.status(400).json({ error: { message: "authKey e email sono obbligatori." } });
   }
 
-  const STREMIO_API_BASE = 'https://api.strem.io/';
-  const ADDONS_GET_URL = `${STREMIO_API_BASE}api/addonCollectionGet`;
-
   try {
-    const addonsResponse = await fetch(ADDONS_GET_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        "authKey": authKey
-      })
-    });
-
-    const addonsData = await addonsResponse.json();
-
-    if (addonsData.error || !addonsData.result) {
-      const errorMsg = addonsData.error?.message || 'Impossibile recuperare gli addon.';
-      // await writeLog(...) RIMOSSO
-      return res.status(400).json({ error: { message: errorMsg } });
-    }
-
-    const finalAddons = addonsData.result.addons || [];
-
-    // await writeLog(...) RIMOSSO
+    // Usa la nuova funzione helper
+    const finalAddons = await getAddonsByAuthKey(authKey);
     res.json({ addons: finalAddons });
 
   } catch (err) {
-    // await writeLog(...) RIMOSSO
-    res.status(500).json({ error: { message: "Errore server durante il recupero degli addon: " + err.message } });
+    // La funzione helper lancia un errore, lo catturiamo
+    res.status(500).json({ error: { message: "Errore durante il recupero degli addon: " + err.message } });
   }
 });
 
@@ -136,20 +157,16 @@ app.post('/api/admin/monitor', async (req, res) => {
   const { adminKey, targetEmail } = req.body;
 
   if (!MONITOR_KEY_SECRET || adminKey !== MONITOR_KEY_SECRET) {
-    // await writeLog(...) RIMOSSO
     return res.status(401).json({ error: { message: "Chiave di monitoraggio non corretta." } });
   }
 
   if (!targetEmail) {
-    // await writeLog(...) RIMOSSO
     return res.status(400).json({ error: { message: "È necessaria l'email dell'utente da monitorare." } });
   }
 
   try {
-    // await writeLog(...) RIMOSSO
     return res.status(403).json({ error: { message: `Impossibile accedere ai dati di ${targetEmail}. Per motivi di sicurezza Stremio richiede la password/AuthKey.` } });
   } catch (err) {
-    // await writeLog(...) RIMOSSO
     res.status(500).json({ error: { message: "Errore interno durante il monitoraggio." } });
   }
 });
@@ -165,7 +182,6 @@ app.post('/api/set-addons', async (req, res) => {
     const { authKey, addons, email } = req.body;
 
     if (!authKey || !addons) {
-      // await writeLog(...) RIMOSSO
       return res.status(400).json({ error: true, message: "Chiave di autenticazione o lista addon mancante." });
     }
 
@@ -199,11 +215,9 @@ app.post('/api/set-addons', async (req, res) => {
     const setData = await setResponse.json();
 
     if (setData.error) {
-      // await writeLog(...) RIMOSSO
       throw new Error(setData.error.message || 'Errore Stremio durante il salvataggio degli addon.');
     }
 
-    // await writeLog(...) RIMOSSO
     res.json({ success: true, message: "Addon salvati con successo." });
 
   } catch (err) {
