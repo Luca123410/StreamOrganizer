@@ -1,75 +1,305 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
-    <title>{{ t('meta.title') }}</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-    <script src="https://unpkg.com/vuedraggable@next/dist/vuedraggable.umd.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>{{ t('meta.title') }}</title>
 
-    <link rel="stylesheet" href="css/style.css">
+  <!-- SEO base -->
+  <meta name="description" content="{{ t('meta.description') }}">
+  <meta name="theme-color" content="#0d0d0d">
 
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Librerie principali -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <script src="https://unpkg.com/vuedraggable@next/dist/vuedraggable.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+
+  <!-- Intro.js -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
+
+  <!-- Stili -->
+  <link rel="stylesheet" href="css/style.css?v=1.0">
 </head>
+
 <body :class="{'light-mode': isLightMode}">
-    <canvas id="bgCanvas"></canvas>
-    <div class="grain" aria-hidden="true"></div>
+  <!-- 🌌 Sfondo animato -->
+  <canvas id="bgCanvas"></canvas>
+  < <div id="app" :lang="lang" :class="{'not-logged-in': !isLoggedIn}">
     
-    <div id="app" :lang="lang" :class="{'not-logged-in': !isLoggedIn}">
-        <div :class="['global-loader', { visible: isLoading }]">
+    <div :class="['global-loader', { visible: isLoading }]">
             <div class="loader-spinner"></div>
         </div>
         
         <teleport to="body">
             <div id="toast-container">
                 <transition-group name="toast" tag="div">
-                    <div v-for="toast in toasts" :key="toast.id" :class="['toast', toast.type]">
+                    <div
+                        v-for="toast in toasts"
+                        :key="toast.id"
+                        :class="['toast', toast.type]"
+                    >
                         {{ toast.message }}
                     </div>
                 </transition-group>
             </div>
         </teleport>
 
-        <header>
-            <h1 @click="incrementAdminClick" data-tour="step-1">{{ t('h1') }}</h1>
-            <div class="subtitle" v-if="!isLoggedIn && !isMonitoring">{{ t('subtitle.login') }}</div>
-            <div class="subtitle" v-else-if="isMonitoring">{{ t('subtitle.monitoring') }}</div>
-            <div class="subtitle" v-else-if="isLoggedIn && (showWelcomeScreen || showWelcomeTourModal)">{{ t('welcome.title') }}</div> <div class="subtitle" v-else-if="isLoggedIn">{{ t('subtitle.loggedIn') }}</div>
-            
-			<div class="security-notice" v-if="!isLoggedIn && !showAdminInput">
-                <span class="security-icon">🛡️</span>
-                <span class="security-text">{{ t('subtitle.security') }}</span>
-            </div>
-			
-            <div style="display:flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 8px;">
-                <div class="lang-switcher">
-                    <span style="font-size: 0.85rem; opacity: 0.8;">{{ t('footer.language') }}:</span>
-                    <select v-model="lang" class="lang-select">
-                        <option value="it">Italiano</option>
-                        <option value="en">English</option>
-                        <option value="fr">Français</option>
-                        <option value="de">Deutsch</option>
-                        <option value="es">Español</option>
-                        <option value="pt">Português</option>
-                    </select>
-                </div>
-                <div class="theme-switcher" style="display:flex; align-items:center; gap: 10px; font-size:0.9rem;">
-                    <span :style="{ opacity: isLightMode ? 0.6 : 0.8, color: isLightMode ? '#333' : '#fff', userSelect: 'none' }">🌙</span>
-                    <label class="toggle-switch" :title="isLightMode ? t('footer.darkMode') : t('footer.lightMode')">
-                        <input type="checkbox" v-model="isLightMode" @change="toggleTheme">
-                        <span class="slider"></span>
-                    </label>
-                    <span :style="{ opacity: isLightMode ? 0.8 : 0.6, color: isLightMode ? '#333' : '#fff', userSelect: 'none' }">☀️</span>
-                </div>
-            </div>
-            
-            <button @click="showInstructions = true" class="instructions-btn" :title="t('instructions.buttonTitle')">?</button>
-        </header>
+      <header
+    class="main-header"
+    style="
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 22px 12px 30px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        background: linear-gradient(180deg, rgba(20,0,40,0.4), rgba(0,0,0,0.25));
+        backdrop-filter: blur(12px) saturate(160%);
+        box-shadow: 0 0 25px rgba(180,0,255,0.15);
+        border-radius: 0 0 20px 20px;
+        animation: fadeIn 0.8s ease-out;
+        overflow: hidden;
+    "
+>
+    <!-- Neon glow aura -->
+    <div
+        style="
+            position:absolute;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background: radial-gradient(circle at 50% 0%, rgba(255,0,255,0.08), rgba(0,255,255,0.03), transparent 70%);
+            pointer-events:none;
+            z-index:0;
+            animation: pulseGlow 5s infinite ease-in-out;
+        "
+    ></div>
+
+    <h1
+        @click="incrementAdminClick"
+        data-tour="step-1"
+        style="
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.3rem;
+            letter-spacing: 1px;
+            color: #E0B3FF;
+            cursor: pointer;
+            text-shadow: 0 0 8px #C77DFF, 0 0 16px #7C4DFF, 0 0 24px #9F5FFF;
+            transition: transform 0.3s ease, text-shadow 0.4s ease;
+            z-index:1;
+            position:relative;
+        "
+        @mouseover="hoverTitle = true"
+        @mouseleave="hoverTitle = false"
+        :style="hoverTitle ? 'transform:scale(1.06);text-shadow:0 0 20px #E69AFF,0 0 35px #A66BFF;' : ''"
+    >
+        {{ t('h1') }}
+    </h1>
+
+    <!-- Neon line -->
+    <div
+        style="
+            width:80px;
+            height:2px;
+            margin-top:6px;
+            background: linear-gradient(90deg, #00E5FF, #BB86FC, #00E5FF);
+            border-radius:2px;
+            box-shadow: 0 0 8px #BB86FC, 0 0 16px #00E5FF;
+            animation: glowLine 3s infinite linear;
+        "
+    ></div>
+
+    <!-- Subtitle -->
+    <transition name="fade">
+        <div
+            v-if="!isLoggedIn && !isMonitoring"
+            class="subtitle"
+            style="color:rgba(255,255,255,0.8);margin-top:10px;font-size:1rem;z-index:1;"
+        >
+            {{ t('subtitle.login') }}
+        </div>
+
+        <div
+            v-else-if="isMonitoring"
+            class="subtitle"
+            style="color:#4FFFEF;margin-top:10px;font-size:1rem;z-index:1;"
+        >
+            {{ t('subtitle.monitoring') }}
+        </div>
+
+        <div
+            v-else-if="isLoggedIn && (showWelcomeScreen || showWelcomeTourModal)"
+            class="subtitle"
+            style="color:#B388FF;margin-top:10px;font-size:1rem;z-index:1;"
+        >
+            {{ t('welcome.title') }}
+        </div>
+
+        <div
+            v-else-if="isLoggedIn"
+            class="subtitle"
+            style="color:#7CFFCB;margin-top:10px;font-size:1rem;z-index:1;"
+        >
+            {{ t('subtitle.loggedIn') }}
+        </div>
+    </transition>
+
+    <!-- Security notice -->
+    <div
+        class="security-notice"
+        v-if="!isLoggedIn && !showAdminInput"
+        style="
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:6px;
+            margin-top:12px;
+            font-size:0.9rem;
+            color:#FFB74D;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:8px;
+            padding:6px 10px;
+            box-shadow:0 0 10px rgba(255,200,100,0.1);
+            z-index:1;
+        "
+    >
+        <span style="font-size:1.1rem;">🛡️</span>
+        <span>{{ t('subtitle.security') }}</span>
+    </div>
+
+    <!-- Controls -->
+    <div
+        class="header-controls"
+        style="
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:30px;
+            flex-wrap:wrap;
+            margin-top:18px;
+            z-index:1;
+        "
+    >
+        <!-- Language Switcher -->
+        <div class="lang-switcher" style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:0.85rem;opacity:0.8;">🌐 {{ t('footer.language') }}</span>
+            <select
+                v-model="lang"
+                class="lang-select"
+                style="
+                    background:rgba(255,255,255,0.05);
+                    color:white;
+                    border:1px solid rgba(255,255,255,0.15);
+                    border-radius:6px;
+                    padding:4px 8px;
+                    font-size:0.9rem;
+                    outline:none;
+                    cursor:pointer;
+                    transition:all 0.2s ease;
+                "
+                @mouseover="event.target.style.borderColor='#BB86FC'"
+                @mouseleave="event.target.style.borderColor='rgba(255,255,255,0.15)'"
+            >
+                <option value="it">Italiano</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="es">Español</option>
+                <option value="pt">Português</option>
+            </select>
+        </div>
+
+        <!-- Theme Switcher -->
+        <div class="theme-switcher" style="display:flex;align-items:center;gap:10px;">
+            <span style="opacity:0.6;">🌙</span>
+            <label
+                class="toggle-switch"
+                :title="isLightMode ? t('footer.darkMode') : t('footer.lightMode')"
+                style="
+                    position:relative;
+                    width:50px;
+                    height:26px;
+                    display:inline-block;
+                    cursor:pointer;
+                "
+            >
+                <input
+                    type="checkbox"
+                    v-model="isLightMode"
+                    @change="toggleTheme"
+                    style="opacity:0;width:0;height:0;"
+                >
+                <span
+                    class="slider"
+                    style="
+                        position:absolute;
+                        inset:0;
+                        background:linear-gradient(90deg,#333,#666);
+                        border-radius:26px;
+                        transition:0.3s;
+                        box-shadow:inset 0 0 6px rgba(0,0,0,0.4);
+                    "
+                ></span>
+                <span
+                    class="slider-ball"
+                    :style="{
+                        position:'absolute',
+                        left: isLightMode ? '26px' : '4px',
+                        top:'4px',
+                        width:'18px',
+                        height:'18px',
+                        borderRadius:'50%',
+                        background:isLightMode ? '#FFE66D' : '#9C6BFF',
+                        transition:'left 0.3s ease, background 0.3s ease'
+                    }"
+                ></span>
+            </label>
+            <span style="opacity:0.8;">☀️</span>
+        </div>
+    </div>
+
+    <!-- Instructions Button -->
+    <button
+        @click="showInstructions = true"
+        class="instructions-btn"
+        :title="t('instructions.buttonTitle')"
+        style="
+            position:absolute;
+            top:12px;
+            right:14px;
+            font-size:1.1rem;
+            background:rgba(255,255,255,0.07);
+            color:white;
+            border:1px solid rgba(255,255,255,0.2);
+            border-radius:50%;
+            width:30px;
+            height:30px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+            backdrop-filter:blur(3px);
+            transition:all 0.3s ease;
+            z-index:2;
+        "
+        @mouseover="event.target.style.boxShadow='0 0 15px #BB86FC'"
+        @mouseleave="event.target.style.boxShadow='none'"
+    >
+        ?
+    </button>
+</header>
+
+
 
         <div v-if="!isLoggedIn" class="welcome-info-panel-container">
             <div class="welcome-panel super-wow">
@@ -93,9 +323,9 @@
              <div class="stats-panel">
                  <h3>{{ t('stats.title') }}</h3>
                  <div v-if="!isMonitoring" style="margin-bottom: 20px; text-align: center;">
-                     <button @click="saveProfile(email)" class="secondary-btn" style="width: 100%; background: linear-gradient(90deg, #4CAF50, #81C784);">
-                         👤 {{ t('profiles.saveButton') }}
-                     </button>
+                    <button @click="saveProfile(email)" class="btn-special-green" style="width: 100%;">
+    👤 {{ t('profiles.saveButton') }}
+</button>
                  </div>
                  <div class="stat-item">
                      <strong>{{ t('stats.total') }}:</strong>
@@ -229,9 +459,9 @@
                         <span v-if="hasUnsavedChanges" class="unsaved-indicator"></span>
                         💾 {{ t('list.saveButton') }} <span v-if="isMonitoring">(Disabled in Monitor Mode)</span>
                     </button>
-                    <button @click="refreshAddonList" class="secondary-btn" :disabled="isLoading || isMonitoring" style="width:100%; margin-top: 10px; background: linear-gradient(90deg, #2196F3, #03A9F4);">
-                        🔄 {{ t('list.refreshButton') }}
-                    </button>
+                    <button @click="refreshAddonList" class="secondary-btn" :disabled="isLoading || isMonitoring" style="width:100%; margin-top: 10px;">
+    🔄 {{ t('list.refreshButton') }}
+</button>
                 </div>
                 <div class="panel add-addon-panel" style="display:flex; gap:10px; align-items:center; padding:12px; min-height: auto;">
                     <input type="text" v-model="newAddonUrl" :placeholder="t('list.addPlaceholder')" style="flex:1;" :disabled="isMonitoring" data-tour="step-3">
@@ -239,12 +469,12 @@
                 </div>
                 <div class="panel" style="margin-top:1rem; padding:12px; min-height: auto;">
                     <h3 style="margin:0 0 10px 0; color:#B9A3FF; font-family:'Orbitron',sans-serif; font-size:1.05rem;">{{ t('backup.title') }}</h3>
-                    <div style="display:flex; gap:10px;" class="backup-actions">
-                        <button @click="exportBackup" class="secondary-btn" style="flex:1; background:linear-gradient(90deg, #4CAF50, #81C784);">{{ t('backup.exportButton') }}</button>
-                        <button @click="triggerFileInput" class="secondary-btn" style="flex:1;" :disabled="isMonitoring">{{ t('backup.importButton') }}</button>
-                        <button @click="generateShareLink" class="secondary-btn" style="flex:1; background:linear-gradient(90deg, #673AB7, #9575CD);">{{ t('backup.shareButton') }}</button>
-                        <button @click="exportTxt" class="secondary-btn" style="flex:1; background:linear-gradient(90deg, #607D8B, #90A4AE);">{{ t('backup.exportTxtButton') }}</button>
-                    </div>
+                   <div style="display:flex; gap:10px;" class="backup-actions">
+    <button @click="exportBackup" class="btn-special-green" style="flex:1;">{{ t('backup.exportButton') }}</button>
+    <button @click="triggerFileInput" class="secondary-btn" style="flex:1;" :disabled="isMonitoring">{{ t('backup.importButton') }}</button>
+    <button @click="generateShareLink" class="btn-special-purple" style="flex:1;">{{ t('backup.shareButton') }}</button>
+    <button @click="exportTxt" class="btn-neutral" style="flex:1;">{{ t('backup.exportTxtButton') }}</button>
+</div>
                     <input type="file" ref="fileInput" @change="handleFileImport" accept=".json" style="display: none;">
                 </div>
                 <div v-if="shareUrl" class="panel" style="margin-top:1rem; padding:12px; border-color: rgba(3,218,198,0.25); min-height: auto;">
@@ -263,9 +493,9 @@
                         </label>
                     </div>
                     <p>{{ t('autoUpdate.description') }}</p>
-                    <button @click="runAutoUpdate(true)" class="secondary-btn" :disabled="isLoading || isMonitoring">
-                        ⚙️ {{ isLoading && isUpdating ? t('autoUpdate.running') : t('autoUpdate.forceButton') }}
-                    </button>
+                    <button @click="runAutoUpdate(true)" class="btn-neutral" :disabled="isLoading || isMonitoring" style="width: 100%;">
+    ⚙️ {{ isLoading && isUpdating ? t('autoUpdate.running') : t('autoUpdate.forceButton') }}
+</button>
                     <div v-if="lastUpdateCheck" class="last-check-time">
                         {{ t('autoUpdate.lastCheck') }}: {{ new Date(lastUpdateCheck).toLocaleString(lang) }}
                     </div>
@@ -467,10 +697,11 @@
             </div>
         </div>
 
-    </div> <script src="js/translations.js"></script>
-    <script src="js/bg-animation.js"></script>
-    <script src="js/app.js"></script>
+    </div> 
+	<script src="js/translations.js" defer></script>
+    <script src="js/bg-animation.js" defer></script>
+    <script src="js/app.js" defer></script>
+
 
 </body>
 </html>
-}
