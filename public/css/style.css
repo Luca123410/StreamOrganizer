@@ -1790,3 +1790,153 @@ body.light-mode .security-text {
     font-weight: 600;
     text-shadow: none;
 }
+
+/* ====== FIX LAYOUT: Centra il box di Login ====== */
+
+/* Questa regola dice al pannello di login 
+  (quando sei .not-logged-in) 
+  di occupare tutto lo spazio verticale disponibile.
+*/
+#app.not-logged-in .main-content .panel[v-if="!isLoggedIn"] {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* <-- La magia è qui: centra verticalmente */
+}
+
+/* Assicura che il form all'interno si adatti 
+  e non cerchi di espandersi
+*/
+#app.not-logged-in .main-content .panel[v-if="!isLoggedIn"] form {
+    flex-grow: 0;
+}
+
+/* Assicura che il pannello "figo" sulla destra
+  sia allineato in alto e non al centro.
+*/
+.welcome-info-panel-container {
+    align-items: flex-start; /* Allinea in alto */
+}
+
+/* ====== EFFETTO FOCUS CYBERPUNK SUL LOGIN ====== */
+
+/* Seleziona il pannello di login quando un suo input è in focus */
+.main-content .panel[v-if="!isLoggedIn"]:focus-within {
+    /* Aggiunge un bordo luminoso color ciano/verde */
+    border-color: rgba(3, 218, 198, 0.4);
+    box-shadow: 
+        0 8px 32px rgba(0,0,0,0.6), /* Ombra esistente */
+        0 0 30px rgba(3, 218, 198, 0.3), /* Bagliore esterno ciano */
+        inset 0 0 15px rgba(3, 218, 198, 0.1); /* Bagliore interno ciano */
+    
+    transition: all 0.3s ease-in-out;
+}
+
+/* Transizione per un effetto morbido */
+.main-content .panel[v-if="!isLoggedIn"] {
+    transition: all 0.3s ease-in-out;
+}
+
+/* ====== NUOVO SISTEMA BOTTONI GERARCHICO ====== */
+
+/* 3. Bottone Speciale (Verde Tech per Esporta/Profilo) */
+.btn-special-green {
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(90deg, rgba(3, 218, 198, 0.4), rgba(3, 218, 198, 0.2));
+    border: 1px solid rgba(3, 218, 198, 0.3);
+    color: #7FF7E1; /* Testo Ciano/Verde Neon */
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+}
+.btn-special-green:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: linear-gradient(90deg, rgba(3, 218, 198, 0.5), rgba(3, 218, 198, 0.3));
+    box-shadow: 0 0 15px rgba(3, 218, 198, 0.2);
+}
+
+/* 4. Bottone Speciale (Viola per Condividi) */
+.btn-special-purple {
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(90deg, rgba(187, 134, 252, 0.4), rgba(187, 134, 252, 0.2));
+    border: 1px solid rgba(187, 134, 252, 0.3);
+    color: #DABFFF; /* Testo Viola Chiaro */
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+}
+.btn-special-purple:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: linear-gradient(90deg, rgba(187, 134, 252, 0.5), rgba(187, 134, 252, 0.3));
+    box-shadow: 0 0 15px rgba(187, 134, 252, 0.2);
+}
+
+/* 5. Bottone Neutro (Grigio per TXT, Update) */
+.btn-neutral {
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+}
+.btn-neutral:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+.btn-neutral:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Correzione per Light Mode */
+body.light-mode .btn-special-green {
+    background: rgba(29, 233, 182, 0.2);
+    border-color: rgba(29, 233, 182, 0.4);
+    color: #004D40;
+}
+body.light-mode .btn-special-purple {
+    background: rgba(41, 121, 255, 0.15);
+    border-color: rgba(41, 121, 255, 0.3);
+    color: #2979FF;
+}
+body.light-mode .btn-neutral {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #555;
+}
+body.light-mode .btn-neutral:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.12);
+    color: #111;
+}
+
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+@keyframes glowLine {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+</style>
