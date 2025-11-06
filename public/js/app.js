@@ -75,7 +75,8 @@ const { createApp, ref, computed, onMounted, onBeforeUnmount, watch, nextTick } 
                 ...addon, 
                 isEditing: false, 
                 newLocalName: addon.manifest.name, 
-                status: 'unchecked', 
+                newTransportUrl: addon.transportUrl,
+				status: 'unchecked', 
                 selected: false, 
                 errorDetails: null, 
                 isEnabled: addon.isEnabled !== undefined ? addon.isEnabled : true, 
@@ -408,25 +409,32 @@ const { createApp, ref, computed, onMounted, onBeforeUnmount, watch, nextTick } 
                     const oldManifestComparable = getComparableManifest(addon.manifest);
                     const newManifestComparable = getComparableManifest(newManifest);
                     
-                    if (oldManifestComparable !== newManifestComparable) {
-                        hasManifestChanges = true; updatedCount++;
-                        
-                        // La tua logica per preservare il nome è corretta
-                        const currentName = addon.manifest.name;
-                        addon.manifest = { ...newManifest, name: currentName };
-                        addon.newLocalName = currentName;
-                        
-                        return { status: 'fulfilled', id: addon.manifest.id };
-                    } 
+                 if (oldManifestComparable !== newManifestComparable) {
+    hasManifestChanges = true; updatedCount++;
+
+    // Conserva un riferimento al vecchio manifesto 
+    const oldManifest = addon.manifest;
+
+    // FARE IL MERGE
+    addon.manifest = { 
+        ...oldManifest,   
+        ...newManifest,    
+        name: oldManifest.name 
+    };
+
+    addon.newLocalName = oldManifest.name; 
+
+    return { status: 'fulfilled', id: addon.manifest.id };
+}
                     return { status: 'fulfilled', id: addon.manifest.id, noChange: true };
                 } catch (error) { 
                     console.error(`Failed to update ${addonName}:`, error); 
                     failedCount++; 
                     return { status: 'rejected', id: addon.manifest.id, reason: error.message }; 
                 }
-            }; // <-- Fine di fetchAndUpdateAddon
+            }; 
 
-            // Il resto della funzione runAutoUpdate (dal tuo snippet)
+            // Il resto della funzione runAutoUpdate 
             const results = await Promise.allSettled(addons.value.map(fetchAndUpdateAddon));
             
             if (hasManifestChanges) { 
@@ -446,9 +454,9 @@ const { createApp, ref, computed, onMounted, onBeforeUnmount, watch, nextTick } 
             }
             
             isUpdating.value = false;
-        }; // <-- Questa è la parentesi graffa che chiude runAutoUpdate
+        }; 
 
-        // Le altre funzioni che hai incollato (sono corrette e rimangono invariate)
+        // 
         const scheduleUpdateCheck = () => {
             const now = new Date(); const nextUpdate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 3, 0, 0, 0);
             if (now.getTime() > nextUpdate.getTime()) { nextUpdate.setDate(nextUpdate.getDate() + 1); }
@@ -465,8 +473,8 @@ const { createApp, ref, computed, onMounted, onBeforeUnmount, watch, nextTick } 
             // NUOVO: Toggle per disabilitare l'auto-update
             const toggleAddonDisableAutoUpdate = (addon) => {
                  if (!isMonitoring.value) {
-                    addon.disableAutoUpdate = !addon.disableAutoUpdate; // Inverti lo stato
-                    // Modificato per usare il nuovo stato
+                    addon.disableAutoUpdate = !addon.disableAutoUpdate; 
+                    
                     recordAction(t.value(addon.disableAutoUpdate ? 'actions.excludedFromUpdate' : 'actions.includedInUpdate', { name: addon.manifest.name })); 
                  }
             };
@@ -474,19 +482,81 @@ const { createApp, ref, computed, onMounted, onBeforeUnmount, watch, nextTick } 
 
             const openConfiguration = (addon) => { const baseUrl = addon.transportUrl.replace(/\/manifest.json$/, ''); window.open(`${baseUrl}/configure`, '_blank'); };
             const copyManifestUrl = async (addon) => { try { await navigator.clipboard.writeText(addon.transportUrl); showToast(t.value('addon.copyUrlSuccess'), 'success'); } catch(e) { showToast(t.value('addon.copyUrlError'), 'error'); } };
-            const startEdit = (addon) => { if (!isMonitoring.value) { addon.newLocalName = addon.manifest.name; addon.isEditing = true; } };
-            const finishEdit = (addon) => { 
+            const startEdit = (addon) => { 
                 if (!isMonitoring.value) { 
-                    const oldName = addon.manifest.name; 
-                    const newName = addon.newLocalName.trim(); 
-                    if (newName && newName !== oldName) { 
-                        // MODIFICATO: Chiama recordAction con la descrizione dell'azione
-                        recordAction(t.value('actions.renamed', { oldName: oldName, newName: newName })); 
-                        addon.manifest.name = newName; 
-                        showToast(t.value('addon.renameSuccess'), 'info'); 
-                    } 
-                    addon.isEditing = false; 
-                } else { addon.isEditing = false; }
+                    addon.newLocalName = addon.manifest.name; 
+                    addon.newTransportUrl = addon.transportUrl; // <-- AGGIUNGI QUESTA
+                    addon.isEditing = true; 
+                } 
+            };
+           const finishEdit = async (addon) => {
+                if (isMonitoring.value) {
+                    addon.isEditing = false;
+                    return;
+                }
+
+                const oldName = addon.manifest.name;
+                const newName = addon.newLocalName.trim();
+                const oldUrl = addon.transportUrl;
+                const newUrl = addon.newTransportUrl.trim();
+
+                const nameChanged = newName && newName !== oldName;
+                const urlChanged = newUrl && newUrl !== oldUrl;
+
+                // Se non è cambiato nulla, chiudi e basta
+                if (!nameChanged && !urlChanged) {
+                    addon.isEditing = false;
+                    return;
+                }
+
+                // Se l'URL è cambiato, dobbiamo validarlo
+                if (urlChanged) {
+                    isLoading.value = true;
+                    try {
+                        // 1. Controlla se il nuovo URL è valido
+                        const response = await fetch(`${apiBaseUrl}/api/fetch-manifest`, { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify({ manifestUrl: newUrl }) 
+                        });
+                        const responseText = await response.text();
+                        let newManifest;
+                        try { 
+                            newManifest = JSON.parse(responseText); 
+                        } catch (e) { 
+                            throw new Error(`Risposta JSON non valida dal nuovo URL.`); 
+                        }
+                        
+                        if (!response.ok || newManifest.error) {
+                            throw new Error(newManifest.error?.message || "Nuovo URL non valido o irraggiungibile.");
+                        }
+
+                        // 2. URL valido! Applica tutte le modifiche.
+                        addon.transportUrl = newUrl;
+                        // Applica il nuovo manifesto, ma mantieni il nome che l'utente ha inserito
+                        addon.manifest = { ...newManifest, name: newName }; 
+                        addon.status = 'ok'; // Lo abbiamo appena controllato
+                        
+                        recordAction(t.value('addon.updateUrlSuccess', { name: oldName, newUrl: newUrl }));
+                        showToast(t.value('addon.updateUrlSuccess', { name: oldName, newUrl: newUrl }), 'success');
+                        
+                    } catch (err) {
+                        showToast(t.value('addon.updateUrlError', { message: err.message }), 'error');
+                        // Non chiudere l'editor, l'utente deve correggere l'URL
+                        isLoading.value = false;
+                        return; 
+                    }
+                
+                } else if (nameChanged) {
+                    // È cambiato solo il nome, semplice.
+                    recordAction(t.value('actions.renamed', { oldName: oldName, newName: newName }));
+                    addon.manifest.name = newName;
+                    showToast(t.value('addon.renameSuccess'), 'info');
+                }
+
+                // Se tutto è andato bene, chiudi
+                addon.isEditing = false;
+                isLoading.value = false;
             };
             const addNewAddon = async () => {
                 if (isMonitoring.value) return; 
