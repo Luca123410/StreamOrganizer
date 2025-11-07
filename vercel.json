@@ -2,20 +2,31 @@
   "version": 2,
   "builds": [
     {
+      "src": "index.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "public/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "^/(.*)\\.(js|mjs|css|map|json|xml|txt|png|jpg|jpeg|gif|svg|ico|webp)$",
+      "src": "/api/(.*)",
+      "dest": "index.js"
+    },
+    {
+      "src": "/(.*)\\.(js|mjs|css|map|json|xml|txt|png|jpg|jpeg|gif|svg|ico|webp)$",
       "dest": "/public/$1"
     },
     {
-      "src": "^/(.*)$",
+      "src": "/(.*)",
       "dest": "/public/index.html"
     }
   ],
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "env": {
+    "MONITOR_KEY": "@monitor_key_secret"
+  }
 }
