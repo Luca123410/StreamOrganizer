@@ -1,80 +1,122 @@
-/* ====== RESET & BASE ====== */
-* {
+/* ====== UNIVERSAL RESET ====== */
+*,
+*::before,
+*::after {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
-/* Queste sono le tue regole di default (DARK MODE)
-*/
-html, body {
+/* ====== BASE STYLES (Dark Mode Default) ====== */
+html,
+body {
     min-height: 100vh;
-    height: auto;
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-    
-    /* Colori di base (Dark Mode) */
-    background: #08020a;
-    color: #E6E6E6; /* <-- Il grigio chiaro di default */
-
+    height: 100%;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: radial-gradient(circle at top left, #0c0311 0%, #08020a 80%);
+    color: #e4e4e4;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-y: auto;
     overflow-x: hidden;
     scroll-behavior: smooth;
-    transition: background 0.5s ease, color 0.5s ease;
-    line-height: 1.5;
-
-    /* Scrollbar per Firefox (Dark Mode) */
-    scrollbar-width: thin;
-    scrollbar-color: #3a2a45 #08020a; 
+    line-height: 1.6;
+    transition: background 0.4s ease, color 0.4s ease;
 }
 
-/* Scrollbar per WebKit (Dark Mode) */
+/* ====== TEXT SELECTION ====== */
+::selection {
+    background: #7b3cff;
+    color: #fff;
+}
+
+/* ====== ▼▼▼ MIGLIORIE ACCESSIBILITÀ (Focus) ▼▼▼ ====== */
+
+/* Aggiunge un "glow" neon agli elementi interattivi
+  quando selezionati con la tastiera (Tab).
+*/
+.primary-btn:focus-visible,
+.secondary-btn:focus-visible,
+.btn-neutral:focus-visible,
+.btn-special-green:focus-visible,
+.btn-special-purple:focus-visible,
+.lang-select:focus-visible,
+.addon-item:focus-visible,
+.toggle-switch input:focus-visible + .slider {
+  
+  /* Usa la tua variabile --c-primary-neon se l'hai definita! */
+  outline: 2px solid var(--c-primary-neon, #BB8FC);
+  outline-offset: 3px;
+  
+  /* Aggiunge un bagliore "cyberpunk" */
+  box-shadow: 0 0 15px var(--c-primary-neon, #BB8FC);
+}
+
+/* Assicura che l'input di ricerca sia visibile */
+input[type="text"]:focus-visible {
+   outline: 2px solid var(--c-secondary-neon, #03DAC6);
+   outline-offset: 2px;
+}
+/* ====== ▲▲▲ FINE ACCESSIBILITÀ ▲▲▲ ====== */
+
+/* ====== SCROLLBAR (WebKit) ====== */
 ::-webkit-scrollbar {
     width: 10px;
 }
+
 ::-webkit-scrollbar-track {
-    background: #08020a; 
-}
-::-webkit-scrollbar-thumb {
-    background-color: #3a2a45;
+    background: #0b040d;
     border-radius: 5px;
-    border: 2px solid #08020a;
 }
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #412452, #3a2a45);
+    border-radius: 6px;
+    border: 2px solid #0b040d;
+    transition: background 0.3s ease;
+}
+
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #503a60;
+    background: linear-gradient(180deg, #613c7d, #503a60);
+}
+
+/* ====== SCROLLBAR (Firefox) ====== */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #3a2a45 #0b040d;
 }
 
 
 /* ====== REGOLE PER LIGHT MODE ====== */
 body.light-mode {
-    background: #f4f4f4; /* Sfondo chiaro */
-    color: #222222;    /* Testo scuro */
-    
-    /* Scrollbar per Firefox (Light Mode) */
-    scrollbar-color: #aaaaaa #f4f4f4;
+    background: radial-gradient(circle at top left, #fafafa 0%, #f4f4f4 80%);
+    color: #1f1f1f;
+    transition: background 0.4s ease, color 0.4s ease;
+
+    /* Scrollbar (Firefox) */
+    scrollbar-width: thin;
+    scrollbar-color: #bdbdbd #f4f4f4;
 }
 
-/* Scrollbar per WebKit (Light Mode) */
+/* ===== Scrollbar WebKit (Light Mode) ===== */
+body.light-mode::-webkit-scrollbar {
+    width: 10px;
+}
 body.light-mode::-webkit-scrollbar-track {
     background: #f4f4f4;
+    border-radius: 5px;
 }
 body.light-mode::-webkit-scrollbar-thumb {
-    background-color: #aaaaaa;
-    border-color: #f4f4f4;
+    background: linear-gradient(180deg, #bfbfbf, #aaaaaa);
+    border-radius: 6px;
+    border: 2px solid #f4f4f4;
+    transition: background 0.3s ease;
 }
 body.light-mode::-webkit-scrollbar-thumb:hover {
-    background-color: #888888;
+    background: linear-gradient(180deg, #9e9e9e, #888888);
 }
 
-
-/* ====== 💡 NUOVA CORREZIONE PER TESTO GRIGIO 💡 ====== */
-/* Questo blocco forza tutti gli elementi di testo comuni
-  all'interno del .light-mode a ereditare il colore
-  del body (che abbiamo impostato a #222222).
-  Questo vince contro le regole specifiche del dark mode.
-*/
+/* ===== Text correction (inherit color from body) ===== */
 body.light-mode p,
 body.light-mode span,
 body.light-mode li,
@@ -85,22 +127,33 @@ body.light-mode h3,
 body.light-mode h4,
 body.light-mode h5,
 body.light-mode h6 {
-    color: inherit; /* 'inherit' significa "usa lo stesso colore del tuo genitore" */
+    color: inherit;
 }
 
-
-/* ====== SOLUZIONE "Lingua" NERO (già presente) ====== */
+/* ===== Buttons & Links ===== */
 button,
 a,
 [role="button"] {
-    color: inherit; /* Eredita il colore (chiaro o scuro) */
+    color: inherit;
     text-decoration: none;
     cursor: pointer;
+    transition: color 0.25s ease, background-color 0.25s ease;
 }
 
-/* Stili per Intro.js (già presenti) */
+body.light-mode a:hover,
+body.light-mode button:hover {
+    color: #5e2fd4; /* piccolo accento violetto coerente con il dark mode */
+}
+
+/* ===== Selection Highlight ===== */
+body.light-mode ::selection {
+    background: #b197ff;
+    color: #fff;
+}
+
+/* ===== Intro.js Override ===== */
 .introjs-button {
-    color: #333 !important; 
+    color: #333 !important;
 }
 /* ====== BACKGROUND CANVAS + CYBERPUNK MAGIC ====== */
 #bgCanvas {
@@ -111,48 +164,74 @@ a,
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
-    /* Palette cyberpunk: viola/fucsia/ciano */
-    background: radial-gradient(circle at 50% 50%, rgba(50,10,60,0.85) 0%, rgba(10,5,20,1) 80%),
-                radial-gradient(circle at 25% 25%, rgba(255,0,200,0.07) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(0,200,255,0.05) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(180,50,255,0.04) 0%, transparent 60%);
-    background-blend-mode: overlay, screen, screen, screen;
-    will-change: opacity, transform;
-    contain: strict;
-    box-shadow: inset 0 0 120px rgba(255,255,255,0.05);
+
+    /* Base glow layers (profondità e contrasto) */
+    background: radial-gradient(circle at 50% 50%, rgba(45, 10, 60, 0.9) 0%, rgba(8, 2, 10, 1) 80%),
+                radial-gradient(circle at 25% 25%, rgba(255, 0, 180, 0.10) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 200, 255, 0.08) 0%, transparent 55%),
+                radial-gradient(circle at 70% 70%, rgba(170, 80, 255, 0.06) 0%, transparent 60%);
+    background-blend-mode: overlay, screen, lighten, lighten;
     transform: translateZ(0);
-    animation: bgPulse 18s infinite alternate ease-in-out, bgShift 40s infinite linear;
+    contain: strict;
+    will-change: opacity, transform, background-position;
+    box-shadow: inset 0 0 200px rgba(255, 255, 255, 0.03);
+    animation: bgPulse 20s infinite alternate ease-in-out, bgShift 60s infinite ease-in-out;
 }
 
-/* Pulsazione lenta e delicata */
+/*  Pulsazione “respirante” */
 @keyframes bgPulse {
-    0% { opacity: 0.94; }
-    50% { opacity: 1; }
-    100% { opacity: 0.94; }
+    0% { opacity: 0.9; filter: brightness(1) saturate(1); }
+    50% { opacity: 1; filter: brightness(1.05) saturate(1.15); }
+    100% { opacity: 0.9; filter: brightness(1) saturate(1); }
 }
 
-/* Movimento leggero dei gradienti per “vita” */
+/*  Movimento organico dei gradienti */
 @keyframes bgShift {
-    0% { background-position: 50% 50%, 25% 25%, 80% 20%, 70% 70%; }
-    50% { background-position: 52% 48%, 23% 27%, 78% 22%, 72% 68%; }
-    100% { background-position: 50% 50%, 25% 25%, 80% 20%, 70% 70%; }
+    0% { background-position: 50% 50%, 20% 25%, 80% 20%, 75% 75%; }
+    25% { background-position: 48% 52%, 22% 23%, 78% 22%, 73% 73%; }
+    50% { background-position: 52% 48%, 24% 27%, 76% 18%, 71% 71%; }
+    75% { background-position: 51% 49%, 25% 25%, 79% 21%, 74% 74%; }
+    100% { background-position: 50% 50%, 20% 25%, 80% 20%, 75% 75%; }
 }
 
-/* Piccole particelle luminose (simulate con box-shadow) */
+/*  Particelle sottili e movimento atmosferico */
 #bgCanvas::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 100%);
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 100%),
+        radial-gradient(circle at 60% 40%, rgba(255, 0, 255, 0.02) 0%, transparent 60%);
+    mix-blend-mode: screen;
     pointer-events: none;
-    animation: particlesDrift 60s infinite linear;
+    animation: particlesDrift 90s infinite linear;
+    will-change: transform, opacity;
 }
 
 @keyframes particlesDrift {
+    0% { transform: translate(0, 0) scale(1); opacity: 0.35; }
+    25% { transform: translate(40px, -25px) scale(1.1); opacity: 0.45; }
+    50% { transform: translate(60px, 20px) scale(1.05); opacity: 0.4; }
+    75% { transform: translate(20px, -15px) scale(1.15); opacity: 0.5; }
+    100% { transform: translate(0, 0) scale(1); opacity: 0.35; }
+}
+
+/*  Layer extra glow dinamico */
+#bgCanvas::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 40% 60%, rgba(255, 0, 200, 0.05), transparent 70%);
+    mix-blend-mode: color-dodge;
+    animation: glowShift 40s infinite alternate ease-in-out;
+}
+
+@keyframes glowShift {
     0% { transform: translate(0,0) scale(1); opacity: 0.3; }
-    50% { transform: translate(50px, -30px) scale(1.1); opacity: 0.4; }
+    50% { transform: translate(30px,-30px) scale(1.05); opacity: 0.5; }
     100% { transform: translate(0,0) scale(1); opacity: 0.3; }
 }
+
 
 
 /* ====== APP CONTAINER (Glass Card) ====== */
@@ -328,7 +407,7 @@ a,
    ====================== */
 header { grid-column: 1 / -1; grid-row: 1 / 2; }
 
-/* ====== NUOVO TITOLO "StreamOrder" SOFT CYBERPUNK GLITCH ====== */
+
 
 /* 1. Animazione ingresso titolo */
 @keyframes titleSoftGlitch {
@@ -360,17 +439,17 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         /* ====== HEADER ====== */
        header {
     display: flex;
-    flex-direction: column;       /* colonna */
-    align-items: center;          /* centra orizzontalmente */
-    justify-content: center;      /* centra verticalmente */
-    gap: 6px;                     /* spazio tra gli elementi */
+    flex-direction: column;       
+    align-items: center;          
+    justify-content: center;     
+    gap: 6px;                     
     position: relative;
-    min-height: 150px;            /* altezza minima header, modificabile */
+    min-height: 150px;           
 }
 
        h1 {
     font-family: 'Orbitron', sans-serif;
-    color: #BB86FC;           /* soft cyberpunk */
+    color: #BB86FC;           
     font-size: 1.9rem;
     margin: 0;
     letter-spacing: 0.6px;
@@ -413,8 +492,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         .instructions-btn { position: absolute; top: 0px; right: 0px; background: rgba(187,134,252,0.1); border: 1px solid rgba(187,134,252,0.2); color: #BB86FC; width: 36px; height: 36px; border-radius: 50%; font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 10px rgba(187,134,252,0.1); }
         .instructions-btn:hover { background: rgba(187,134,252,0.2); box-shadow: 0 0 15px rgba(187,134,252,0.3); transform: scale(1.05); }
         /* forms and panels */
-        /* AGGIUNTO: Per permettere al pannello di login di adattarsi a 100% dell'altezza disponibile su mobile */
- /* AGGIUNTO: Per permettere al pannello di login di adattarsi a 100% dell'altezza disponibile su mobile */
+       
 .main-content {
     display: flex;
     flex-direction: column;
@@ -431,7 +509,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
             min-height: 0;
             display: flex;
             flex-direction: column;
-            /* RIMOSSO overflow-y: auto e max-height: 100% per far scrollare il body */
+           
         }
 
         /* Se l'utente non è loggato, il main-content non ha bisogno di scroll interno se tutto è contenuto nel panel */
@@ -440,7 +518,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         }
 
         .main-content > .panel {
-            flex-shrink: 0; /* Impedisce che il pannello si riduca a zero se non c'è contenuto dopo */
+            flex-shrink: 0; 
         }
         
         .panel { 
@@ -450,7 +528,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
             border: 1px solid rgba(187,134,252,0.06); 
             box-shadow: 0 6px 18px rgba(0,0,0,0.6); 
             min-height: auto; 
-            flex-grow: 1; /* Nuovo: Permette al pannello di espandersi nel main-content */
+            flex-grow: 1; 
             display: flex;
             flex-direction: column;
         }
@@ -480,7 +558,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         .addon-list:grabbing { cursor: grabbing; }
         .addon-item {
             display: flex;
-            flex-wrap: wrap; /* AGGIUNTO: Permette ai dettagli di andare a capo */
+            flex-wrap: wrap; 
             align-items: center;
             gap: 12px;
             padding: 12px;
@@ -533,7 +611,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         .toggle-switch input:checked + .slider:not(.no-update-slider) { background-color: #03DAC6; }
         /* NEW: Style for the 'Disable Auto Update' toggle when checked */
         .toggle-switch input:checked + .slider.no-update-slider {
-            background-color: #CF6679; /* Red/Error color when checked (disabling updates) */
+            background-color: #CF6679; 
         }
         input:checked + .slider:before { transform: translateX(20px); }
         .edit-name-input { padding:8px 10px; border-radius:8px; border:1px solid rgba(187,134,252,0.12); background:#121016; color:#fff; }
@@ -570,8 +648,8 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         .search-input-container input { background: linear-gradient(180deg, rgba(14,9,18,0.85), rgba(16,10,22,0.75)); border: 1px solid rgba(187,134,252,0.2); box-shadow: 0 0 15px rgba(187,134,252,0.1); height: 40px; width: 100%; padding-left: 10px; }
         /* Pulsante Verifica Stato - Aggiunto stile per spaziatura */
         .check-status-button-container {
-            margin-top: 1rem; /* Aggiunto margine sopra */
-            margin-bottom: 1.5rem; /* Aumentato margine sotto */
+            margin-top: 1rem; 
+            margin-bottom: 1.5rem; 
         }
         
        .modal-overlay {
@@ -581,13 +659,13 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
     backdrop-filter: blur(5px);
     z-index: 1000;
     display: flex;
-    align-items: flex-start;  /* <-- CORRETTO: Allinea in alto */
-    padding-top: 5vh;         /* <-- CORRETTO: Riattivato per dare spazio */
+    align-items: flex-start;  
+    padding-top: 5vh;         
     justify-content: center;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s, visibility 0.3s;
-    overflow-y: auto; /* Aggiunto per sicurezza */
+    overflow-y: auto; 
 }
 
         .modal-overlay.visible { opacity: 1; visibility: visible; }
@@ -622,7 +700,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         @keyframes spin { to { transform: rotate(360deg); } }
         /* ====== ▼▼▼ Stili Toast MODIFICATI (FIXED) ▼▼▼ ====== */
         #toast-container {
-            position: fixed; /* MODIFICATO: Riportato a fixed per visibilità globale */
+            position: fixed; 
             top: 20px;
             right: 20px;
             z-index: 10000;
@@ -630,7 +708,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
             flex-direction: column;
             gap: 10px;
             width: 300px;
-            pointer-events: none; /* Permette di cliccare "attraverso" il container */
+            pointer-events: none; 
         }
         .toast {
             background: linear-gradient(135deg, rgba(30, 30, 40, 0.9), rgba(20, 20, 30, 0.85));
@@ -638,11 +716,11 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
             box-shadow: 0 5px 15px rgba(0,0,0,0.5); backdrop-filter: blur(5px); font-size: 0.9rem;
             animation: slideInDown 0.3s ease-out, fadeOut 0.5s ease-in 2.5s forwards;
             opacity: 1;
-            pointer-events: auto; /* Ripristina i click per i toast stessi */
-            width: 100%; /* Occupa la larghezza del container */
+            pointer-events: auto; 
+            width: 100%; 
         }
         .toast:hover {
-            animation: none; /* Pausa animazioni su hover */
+            animation: none; 
             opacity: 1;
         }
         .toast.success { border-left-color: #03DAC6; } .toast.error { border-left-color: #CF6679; color: #FFBABA; } .toast.info { border-left-color: #BB86FC; }
@@ -664,7 +742,7 @@ header { grid-column: 1 / -1; grid-row: 1 / 2; }
         }
         .details-toggle-btn.expanded {
             transform: translateY(-2px) rotate(90deg); /* Ruota la freccia */
-            background: rgba(187, 134, 252, 0.2); /* Evidenzia quando aperto */
+            background: rgba(187, 134, 252, 0.2); 
             box-shadow: 0 4px 10px rgba(187,134,252,0.15);
         }
         .addon-extra-details {
@@ -1858,7 +1936,7 @@ body.light-mode .security-text {
     box-shadow: 0 0 15px rgba(3, 218, 198, 0.2);
 }
 
-/* 4. Bottone Speciale (Viola per Condividi) */
+/* 4. Bottone Speciale  */
 .btn-special-purple {
     padding: 9px 12px;
     border-radius: 8px;
