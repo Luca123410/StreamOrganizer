@@ -13,20 +13,19 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "index.js"
+      "dest": "/index.js"
     },
     {
-      "src": "/(.*)\\.(js|mjs|css|map|json|xml|txt|png|jpg|jpeg|gif|svg|ico|webp)$",
-      "dest": "/public/$1"
+      "src": "/css/(.*)",
+      "dest": "/public/css/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
     },
     {
       "src": "/(.*)",
       "dest": "/public/index.html"
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "env": {
-    "MONITOR_KEY": "@monitor_key_secret"
-  }
+  ]
 }
