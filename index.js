@@ -1,5 +1,5 @@
 // ============================================================
-// 🚀 StreamOrganizer – Entry Serverless (Vercel Ready)
+// 🚀 StreamOrganizer – Serverless Vercel Ready
 // ============================================================
 
 const express = require("express");
@@ -16,13 +16,10 @@ if (!global.AbortController) {
   global.AbortController = AbortController;
 }
 
-// ============================================================
-// 🔧 Setup Express
-// ============================================================
 const app = express();
 
 // ============================================================
-// 🛡️ Sicurezza
+// 🔒 Sicurezza
 // ============================================================
 
 app.use(
@@ -56,11 +53,10 @@ app.use(
 );
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // ============================================================
-// 🔧 Rate Limit
+// ⏱️ Rate Limit
 // ============================================================
 
 const limiter = rateLimit({
@@ -68,7 +64,6 @@ const limiter = rateLimit({
   max: 100,
   message: { error: "Troppo richieste. Riprova tra 15 minuti." },
 });
-
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -78,7 +73,7 @@ const loginLimiter = rateLimit({
 app.use(limiter);
 
 // ============================================================
-// 🔧 Helper Functions
+// 🔧 Helper
 // ============================================================
 
 function isSafeUrl(url) {
@@ -115,7 +110,7 @@ const cookieOptions = {
 };
 
 // ============================================================
-// 🔧 Joi Schemas
+// 🔹 Joi Schemas
 // ============================================================
 
 const authKeySchema = Joi.object({ authKey: Joi.string().min(1).required() });
@@ -124,7 +119,7 @@ const manifestUrlSchema = Joi.object({ manifestUrl: Joi.string().uri().required(
 const setAddonsSchema = Joi.object({ addons: Joi.array().min(1).required(), email: Joi.string().email().allow(null) });
 
 // ============================================================
-// 🔧 Funzioni principali
+// 🔹 Funzioni principali
 // ============================================================
 
 async function getAddonsByAuthKey(authKey) {
@@ -155,7 +150,7 @@ async function getStremioData(email, password) {
 }
 
 // ============================================================
-// 🔧 Endpoints
+// 🔹 Endpoints
 // ============================================================
 
 // Login
